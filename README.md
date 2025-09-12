@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  🎨 GPT-4o powered generative videos. Concept. ⚡️ <a href="https://discord.gg/HkbYEGybGv">Join our Discord server here!</a>
+  🎨 GPT-4o powered generative videos. Concept. ⚡️ <a href="https://discord.gg/SNdbPU2AMM">Join our Discord server here!</a>
 </p>
 
 <p align="center">
