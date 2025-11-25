@@ -47,7 +47,9 @@ def move_to_public_folder(
     """
     Moves the video to the public folder and returns the URL.
     """
-    public_folder = os.path.join(os.path.dirname(__file__), "public")
+    # Get the api directory (go up one level from routes)
+    api_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    public_folder = os.path.join(api_dir, "public")
     os.makedirs(public_folder, exist_ok=True)
 
     new_file_name = f"{video_storage_file_name}.mp4"
