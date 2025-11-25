@@ -19,3 +19,4 @@ flask-cors==3.0.10
 azure-storage-blob==12.18.2
 azure-monitor-opentelemetry==1.4.2
 manim-physics==0.4.0
+httpx==0.27.2
