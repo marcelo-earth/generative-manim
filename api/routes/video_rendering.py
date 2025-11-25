@@ -251,10 +251,10 @@ config.frame_width = {frame_width}
                     yield f'{{ "video_url": "{video_url}" }}\n'
                     sys.stdout.flush()
                 else:
-                    yield {
+                    yield json.dumps({
                         "message": "Video generation completed",
                         "video_url": video_url,
-                    }
+                    })
             else:
                 full_error = "\n".join(error_output)
                 yield f'{{"error": {json.dumps(full_error)}}}\n'
@@ -287,11 +287,19 @@ config.frame_width = {frame_width}
         try:
             for result in render_video():  # Iterate through the generator
                 print(f"Generated result: {result}")  # Debug print
-                if isinstance(result, dict):
-                    if "video_url" in result:
-                        video_url = result["video_url"]
-                    elif "error" in result:
-                        raise Exception(result["error"])
+                try:
+                    result_dict = json.loads(result)
+                    if "video_url" in result_dict:
+                        video_url = result_dict["video_url"]
+                    elif "error" in result_dict:
+                        raise Exception(result_dict["error"])
+                except (json.JSONDecodeError, TypeError):
+                    # If it's not a JSON string, try treating it as a dict (shouldn't happen now)
+                    if isinstance(result, dict):
+                        if "video_url" in result:
+                            video_url = result["video_url"]
+                        elif "error" in result:
+                            raise Exception(result["error"])
 
             if video_url:
                 return (
