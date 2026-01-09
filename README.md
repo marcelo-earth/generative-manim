@@ -1,4 +1,10 @@
 <p align="center">
+  <b>English</b> | <a href="README_CN.md">中文说明</a>
+</p>
+
+---
+
+<p align="center">
   <img
     src=".github/logo.png"
     align="center"
