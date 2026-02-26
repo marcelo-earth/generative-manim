@@ -1,0 +1,22 @@
+# CodeLlama 7B Instruct
+model:
+  name: codellama-7b
+  hf_id: codellama/CodeLlama-7b-Instruct-hf
+  type: causal_lm
+  max_seq_length: 4096
+  trust_remote_code: false
+
+# QLoRA configuration
+qlora:
+  load_in_4bit: true
+  bnb_4bit_quant_type: nf4
+  bnb_4bit_compute_dtype: float16
+  bnb_4bit_use_double_quant: true
+
+lora:
+  r: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  target_modules: all-linear
+  bias: none
+  task_type: CAUSAL_LM
