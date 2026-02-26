@@ -1,0 +1,19 @@
+torch>=2.1.0
+transformers>=4.38.0
+trl>=0.8.0
+peft>=0.9.0
+bitsandbytes>=0.43.0
+accelerate>=0.27.0
+datasets>=2.17.0
+omegaconf>=2.3.0
+wandb>=0.16.0
+openai>=1.24.0
+anthropic>=0.37.1
+manim==0.18.0
+manim-physics==0.4.0
+jsonlines>=4.0.0
+tqdm>=4.66.0
+pyyaml>=6.0
+rich>=13.0.0
+pandas>=2.0.0
+vllm>=0.3.0  # optional, inference only
