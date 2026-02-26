@@ -1,0 +1,63 @@
+# Base configuration shared across all training stages
+project:
+  name: generative-manim-training
+  output_dir: ./outputs
+  seed: 42
+
+# Paths relative to training/ root
+paths:
+  datasets_dir: ../datasets
+  raw_prompts: ./data/outputs/raw_prompts.jsonl
+  raw_completions: ./data/outputs/raw_completions.jsonl
+  validated_completions: ./data/outputs/validated_completions.jsonl
+  sft_train: ./data/outputs/sft_train.jsonl
+  sft_val: ./data/outputs/sft_val.jsonl
+  sft_test: ./data/outputs/sft_test.jsonl
+  dpo_train: ./data/outputs/dpo_train.jsonl
+  dpo_val: ./data/outputs/dpo_val.jsonl
+  grpo_prompts: ./data/outputs/grpo_prompts.jsonl
+
+# W&B configuration
+wandb:
+  project: generative-manim
+  entity: null  # set via env or CLI
+  tags:
+    - manim
+    - code-generation
+
+# Rendering / Manim verifier settings
+rendering:
+  timeout: 120
+  quality: "-ql"  # low quality for fast validation
+  format: "mp4"
+  max_workers: 4
+  cleanup: true
+
+# System prompt used for all data generation and training
+system_prompt: |
+  You are an assistant that generates Manim animation code. Manim is a mathematical animation engine used to create videos programmatically.
+
+  Example:
+  ```python
+  from manim import *
+  from math import *
+
+  class GenScene(Scene):
+      def construct(self):
+          c = Circle(color=BLUE)
+          self.play(Create(c))
+  ```
+
+  Rules:
+  1. Always use GenScene as the class name.
+  2. Always use self.play() to play animations.
+  3. Always start with `from manim import *`.
+  4. Output only Python code, no explanations.
+  5. The code must be complete and runnable.
+
+# Teacher model settings for synthetic data generation
+teacher:
+  model: gpt-4o
+  temperature: 0.7
+  max_tokens: 2000
+  concurrency: 5
