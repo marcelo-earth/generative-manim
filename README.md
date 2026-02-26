@@ -60,10 +60,25 @@ It began as a prototype of a web app that uses [GPT-4](https://openai.com/resear
 | GM GPT-3.5 Physics Fine Tuned | Fine-tuned GPT-3.5 model trained to generate Physics animations           | GPT-3.5                    | ✅    |
 | GM Claude Sonnet              | Claude Sonnet 3 model from Sonnet adapted with our custom System Prompt   | claude-3-sonnet-20240229   | ✅    |
 | GM Claude Sonnet 3.5          | Claude Sonnet 3.5 model from Sonnet adapted with our custom System Prompt | claude-3-5-sonnet-20240620 | ✅    |
+| GM Qwen 2.5 Coder 7B          | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | Qwen2.5-Coder-7B-Instruct | 🚧    |
+| GM DeepSeek Coder V2 Lite      | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | DeepSeek-Coder-V2-Lite     | 🚧    |
+| GM CodeLlama 7B                | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | CodeLlama-7b-Instruct      | 🚧    |
 
 ### 📡 New Models
 
 If you want to suggest a new model, please open an issue in the [repository](https://github.com/360macky/generative-manim/issues) or talk with us in our [Discord server](https://discord.gg/HkbYEGybGv).
+
+## 🧠 Training Pipeline
+
+We're training **open-source models** to generate Manim code using a 3-stage pipeline that distills from GPT-4o:
+
+1. **SFT** (Supervised Fine-Tuning) — Train on 5,000+ validated prompt→code pairs
+2. **DPO** (Direct Preference Optimization) — Learn from render success/failure pairs
+3. **GRPO** (Group Relative Policy Optimization) — RL with the Manim renderer as a deterministic reward signal
+
+The key insight: Manim is a **deterministic verifier** — code either renders or crashes. This replaces the need for a reward model, similar to how DeepSeek-R1 uses math answer checkers.
+
+**Base models**: Qwen 2.5 Coder 7B, DeepSeek Coder V2 Lite, CodeLlama 7B — all using QLoRA (4-bit) to fit on free Kaggle T4 GPUs.
 
 ## ✨ Sponsors
 
