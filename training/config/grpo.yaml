@@ -1,0 +1,28 @@
+# GRPO (Group Relative Policy Optimization) hyperparameters
+grpo:
+  group_size: 8
+  num_train_epochs: 1
+  learning_rate: 1.0e-5
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.1
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 8
+  fp16: true
+  bf16: false
+  logging_steps: 5
+  save_steps: 50
+  save_total_limit: 2
+  max_grad_norm: 1.0
+  weight_decay: 0.01
+  optim: paged_adamw_32bit
+  kl_coeff: 0.05
+  temperature: 0.8
+  max_completion_length: 2048
+  report_to: wandb
+  output_dir: ./outputs/grpo
+
+# Reward function weights
+reward:
+  render_success: 1.0
+  animation_bonus_per_play: 0.1
+  animation_bonus_cap: 0.5
