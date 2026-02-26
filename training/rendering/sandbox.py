@@ -1,10 +1,13 @@
 """Sandbox environment for safe Manim code execution."""
 
+from __future__ import annotations
+
 import os
 import tempfile
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Optional
 
 
 @dataclass
@@ -18,9 +21,9 @@ class SandboxConfig:
 class RenderSandbox:
     """Creates isolated temp directories for Manim rendering."""
 
-    def __init__(self, config: SandboxConfig | None = None):
+    def __init__(self, config: Optional[SandboxConfig] = None):
         self.config = config or SandboxConfig()
-        self._temp_dir: str | None = None
+        self._temp_dir: Optional[str] = None
 
     def __enter__(self) -> "RenderSandbox":
         self._temp_dir = tempfile.mkdtemp(prefix="manim_render_")
@@ -48,7 +51,7 @@ class RenderSandbox:
         """Return the expected output video path."""
         return os.path.join(self.temp_dir, f"{class_name}.mp4")
 
-    def find_video(self, class_name: str = "GenScene") -> str | None:
+    def find_video(self, class_name: str = "GenScene") -> Optional[str]:
         """Search for rendered video file in sandbox."""
         # Check direct output
         direct = self.get_output_path(class_name)

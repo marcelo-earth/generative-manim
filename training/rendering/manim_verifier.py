@@ -1,11 +1,14 @@
 """Core Manim verifier: runs Manim subprocess and returns structured results."""
 
+from __future__ import annotations
+
 import os
 import re
 import subprocess
 import time
 from dataclasses import dataclass
 from enum import Enum
+from typing import List, Optional
 
 from .sandbox import RenderSandbox, SandboxConfig
 
@@ -30,7 +33,7 @@ class VerifyResult:
     code: str = ""
 
 
-def extract_class_name(code: str) -> str | None:
+def extract_class_name(code: str) -> Optional[str]:
     """Extract the Scene subclass name from Manim code."""
     match = re.search(r"class\s+(\w+)\s*\(.*Scene.*\)", code)
     return match.group(1) if match else None
@@ -161,11 +164,11 @@ def verify_code(
 
 
 def batch_verify(
-    codes: list[str],
+    codes: List[str],
     max_workers: int = 4,
     timeout: int = 120,
     quality: str = "-ql",
-) -> list[VerifyResult]:
+) -> List[VerifyResult]:
     """Verify multiple Manim codes in parallel."""
     from concurrent.futures import ProcessPoolExecutor, as_completed
 
