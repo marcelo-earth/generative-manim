@@ -80,6 +80,34 @@ The key insight: Manim is a **deterministic verifier** — code either renders o
 
 **Base models**: Qwen 2.5 Coder 7B, DeepSeek Coder V2 Lite, CodeLlama 7B — all using QLoRA (4-bit) to fit on free Kaggle T4 GPUs.
 
+## 📏 Benchmark
+
+Generative Manim now includes an executable benchmark MVP for expert Manim code generation under [`training/benchmarks`](./training/benchmarks).
+
+The benchmark is built around the right primitives for programming evaluation:
+
+- a frozen task suite
+- render-based scoring
+- Manim-specific structural checks
+- reproducible JSONL and JSON reports
+
+Start here:
+
+```bash
+cd training
+python -m benchmarks.run export \
+  --suite benchmarks/tasks/core_v1.jsonl \
+  --output ./outputs/benchmarks/core_v1_prompts.jsonl
+```
+
+Then use the generated prompt file with `python -m eval.generate_responses ...`, or run the full flow with:
+
+```bash
+bash ./scripts/run_benchmark.sh qwen2.5-coder-7b ./outputs/grpo/qwen2.5-coder-7b benchmarks/tasks/core_v1.jsonl grpo
+```
+
+See [`training/benchmarks/README.md`](./training/benchmarks/README.md) for the benchmark design and workflow.
+
 ## ✨ Sponsors
 
 **Generative Manim** is currently sponsored by **The Astronomical Software Company**.
