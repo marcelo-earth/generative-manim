@@ -9,9 +9,9 @@ import wandb
 from rich.console import Console
 from rich.table import Table
 
-from ..rendering.manim_verifier import verify_code, ErrorType
-from ..utils.code_extraction import clean_code
-from ..utils.logging_utils import setup_wandb, log_metrics, log_table, finish_wandb
+from rendering.manim_verifier import verify_code, ErrorType
+from utils.code_extraction import clean_code
+from utils.logging_utils import setup_wandb, log_metrics, log_table, finish_wandb
 
 console = Console()
 
@@ -50,7 +50,7 @@ def evaluate_responses(
     total_render_time = 0.0
     successes = 0
 
-    from ..rendering.manim_verifier import batch_verify
+    from rendering.manim_verifier import batch_verify
 
     codes = [clean_code(r["response"]) for r in responses]
     verify_results = batch_verify(codes, max_workers=max_workers, timeout=timeout)

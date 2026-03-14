@@ -172,23 +172,29 @@ def batch_verify(
     """Verify multiple Manim codes in parallel."""
     from concurrent.futures import ProcessPoolExecutor, as_completed
 
+    if max_workers <= 1:
+        return [verify_code(code, timeout=timeout, quality=quality) for code in codes]
+
     results = [None] * len(codes)
 
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        future_to_idx = {
-            executor.submit(verify_code, code, timeout, quality): i
-            for i, code in enumerate(codes)
-        }
-        for future in as_completed(future_to_idx):
-            idx = future_to_idx[future]
-            try:
-                results[idx] = future.result()
-            except Exception as e:
-                results[idx] = VerifyResult(
-                    success=False,
-                    error_type=ErrorType.UNKNOWN,
-                    error_message=str(e),
-                    code=codes[idx],
-                )
+    try:
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            future_to_idx = {
+                executor.submit(verify_code, code, timeout, quality): i
+                for i, code in enumerate(codes)
+            }
+            for future in as_completed(future_to_idx):
+                idx = future_to_idx[future]
+                try:
+                    results[idx] = future.result()
+                except Exception as e:
+                    results[idx] = VerifyResult(
+                        success=False,
+                        error_type=ErrorType.UNKNOWN,
+                        error_message=str(e),
+                        code=codes[idx],
+                    )
+    except (PermissionError, OSError):
+        return [verify_code(code, timeout=timeout, quality=quality) for code in codes]
 
     return results

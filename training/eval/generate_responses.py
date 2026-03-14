@@ -9,8 +9,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
 from tqdm import tqdm
 
-from ..utils.system_prompt import SYSTEM_PROMPT
-from ..utils.config_loader import load_config
+from utils.system_prompt import SYSTEM_PROMPT
+from utils.config_loader import load_config
 
 DEFAULT_TEST = Path(__file__).parent.parent / "data" / "outputs" / "test_prompts.jsonl"
 
@@ -63,7 +63,7 @@ def generate_responses(
     with open(test_path) as f:
         for line in f:
             data = json.loads(line)
-            prompts.append(data["prompt"])
+            prompts.append(data)
 
     print(f"Loading model: {model_name} from {checkpoint}")
     model, tokenizer = load_model(model_name, checkpoint)
@@ -72,7 +72,8 @@ def generate_responses(
     print(f"Generating responses for {len(prompts)} test prompts...")
 
     with open(output_path, "w") as f:
-        for prompt in tqdm(prompts, desc="Generating"):
+        for row in tqdm(prompts, desc="Generating"):
+            prompt = row["prompt"]
             messages = [
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt},
@@ -94,7 +95,12 @@ def generate_responses(
             input_len = inputs["input_ids"].shape[1]
             response = tokenizer.decode(output[0][input_len:], skip_special_tokens=True)
 
-            f.write(json.dumps({"prompt": prompt, "response": response}) + "\n")
+            payload = {"prompt": prompt, "response": response}
+            for key in ("task_id", "category", "difficulty"):
+                if key in row:
+                    payload[key] = row[key]
+
+            f.write(json.dumps(payload) + "\n")
 
     print(f"Saved responses to {output_path}")
     return str(output_path)
