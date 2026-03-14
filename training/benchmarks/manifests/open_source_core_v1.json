@@ -1,0 +1,26 @@
+{
+  "suite": "benchmarks/tasks/core_v1.jsonl",
+  "output_dir": "./outputs/benchmarks/open_source_core_v1",
+  "samples_per_prompt": 5,
+  "temperature": 0.8,
+  "seed": 42,
+  "pass_k": [1, 5],
+  "runs": [
+    {
+      "model": "qwen2.5-coder-7b",
+      "run_name": "grpo",
+      "checkpoint": "./outputs/grpo/qwen2.5-coder-7b"
+    },
+    {
+      "model": "deepseek-coder-v2-lite",
+      "run_name": "grpo",
+      "checkpoint": "./outputs/grpo/deepseek-coder-v2-lite"
+    },
+    {
+      "model": "codellama-7b",
+      "run_name": "grpo",
+      "checkpoint": "./outputs/grpo/codellama-7b"
+    }
+  ]
+}
+

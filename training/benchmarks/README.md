@@ -120,3 +120,18 @@ python -m benchmarks.compare \
   --suite core_v1 \
   --output-csv ./outputs/benchmarks/core_v1_leaderboard.csv
 ```
+
+Run a standardized benchmark matrix from a manifest:
+
+```bash
+python -m benchmarks.matrix \
+  --manifest benchmarks/manifests/open_source_core_v1.json \
+  --dry-run
+```
+
+The manifest can mix:
+
+- local checkpoints via `checkpoint`
+- pre-generated API outputs via `responses_path`
+
+That lets the same benchmark stack compare open-source checkpoints and hosted model baselines.

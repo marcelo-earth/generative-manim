@@ -116,6 +116,13 @@ cd training
 python -m benchmarks.compare --results-dir ./outputs/benchmarks --suite core_v1
 ```
 
+Or run a whole benchmark matrix from a manifest:
+
+```bash
+cd training
+python -m benchmarks.matrix --manifest benchmarks/manifests/open_source_core_v1.json --dry-run
+```
+
 ## ✨ Sponsors
 
 **Generative Manim** is currently sponsored by **The Astronomical Software Company**.
