@@ -103,3 +103,20 @@ Evaluation writes:
 - `*_results.jsonl`: per-task outcomes
 - `*_tasks.jsonl`: per-task aggregated summaries, including pass@k
 - `*_summary.json`: aggregate metrics and category breakdown
+
+Compare benchmark runs across models:
+
+```bash
+python -m benchmarks.compare \
+  --results-dir ./outputs/benchmarks \
+  --suite core_v1
+```
+
+Export a CSV leaderboard:
+
+```bash
+python -m benchmarks.compare \
+  --results-dir ./outputs/benchmarks \
+  --suite core_v1 \
+  --output-csv ./outputs/benchmarks/core_v1_leaderboard.csv
+```

@@ -109,6 +109,13 @@ bash ./scripts/run_benchmark.sh qwen2.5-coder-7b ./outputs/grpo/qwen2.5-coder-7b
 
 See [`training/benchmarks/README.md`](./training/benchmarks/README.md) for the benchmark design and workflow.
 
+Once you have multiple benchmark runs, compare them with:
+
+```bash
+cd training
+python -m benchmarks.compare --results-dir ./outputs/benchmarks --suite core_v1
+```
+
 ## ✨ Sponsors
 
 **Generative Manim** is currently sponsored by **The Astronomical Software Company**.
