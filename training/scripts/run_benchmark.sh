@@ -2,10 +2,13 @@
 # Run the frozen Generative Manim benchmark for a checkpoint.
 set -e
 
-MODEL=${1:?Usage: run_benchmark.sh <model> <checkpoint> [suite] [run-name]}
-CHECKPOINT=${2:?Usage: run_benchmark.sh <model> <checkpoint> [suite] [run-name]}
+MODEL=${1:?Usage: run_benchmark.sh <model> <checkpoint> [suite] [run-name] [samples-per-prompt] [temperature] [pass-k]}
+CHECKPOINT=${2:?Usage: run_benchmark.sh <model> <checkpoint> [suite] [run-name] [samples-per-prompt] [temperature] [pass-k]}
 SUITE=${3:-benchmarks/tasks/core_v1.jsonl}
 RUN_NAME=${4:-benchmark}
+SAMPLES_PER_PROMPT=${5:-5}
+TEMPERATURE=${6:-0.8}
+PASS_K=${7:-1,5}
 
 cd "$(dirname "$0")/.."
 
@@ -26,7 +29,9 @@ python -m eval.generate_responses \
   --model "$MODEL" \
   --checkpoint "$CHECKPOINT" \
   --test-path "$PROMPTS_PATH" \
-  --output "$RESPONSES_PATH"
+  --output "$RESPONSES_PATH" \
+  --temperature "$TEMPERATURE" \
+  --samples-per-prompt "$SAMPLES_PER_PROMPT"
 
 echo ""
 echo "Step 3: Evaluate benchmark results"
@@ -35,7 +40,8 @@ python -m benchmarks.run evaluate \
   --responses "$RESPONSES_PATH" \
   --output-dir "$OUTPUT_DIR" \
   --model-name "$MODEL" \
-  --run-name "$RUN_NAME"
+  --run-name "$RUN_NAME" \
+  --pass-k "$PASS_K"
 
 echo ""
 echo "=== Benchmark Complete ==="

@@ -89,6 +89,7 @@ The benchmark is built around the right primitives for programming evaluation:
 - a frozen task suite
 - render-based scoring
 - Manim-specific structural checks
+- pass@k for stochastic code generation
 - reproducible JSONL and JSON reports
 
 Start here:
@@ -103,7 +104,7 @@ python -m benchmarks.run export \
 Then use the generated prompt file with `python -m eval.generate_responses ...`, or run the full flow with:
 
 ```bash
-bash ./scripts/run_benchmark.sh qwen2.5-coder-7b ./outputs/grpo/qwen2.5-coder-7b benchmarks/tasks/core_v1.jsonl grpo
+bash ./scripts/run_benchmark.sh qwen2.5-coder-7b ./outputs/grpo/qwen2.5-coder-7b benchmarks/tasks/core_v1.jsonl grpo 5 0.8 1,5
 ```
 
 See [`training/benchmarks/README.md`](./training/benchmarks/README.md) for the benchmark design and workflow.

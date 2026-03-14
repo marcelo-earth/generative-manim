@@ -5,9 +5,9 @@ import json
 from pathlib import Path
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from peft import PeftModel
 from tqdm import tqdm
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 from utils.system_prompt import SYSTEM_PROMPT
 from utils.config_loader import load_config
@@ -49,9 +49,16 @@ def generate_responses(
     output_path: str | Path | None = None,
     max_new_tokens: int = 2048,
     temperature: float = 0.2,
+    samples_per_prompt: int = 1,
+    seed: int | None = None,
 ):
     """Generate responses for all test prompts."""
     test_path = Path(test_path)
+
+    if samples_per_prompt < 1:
+        raise ValueError("samples_per_prompt must be >= 1")
+    if samples_per_prompt > 1 and temperature <= 0:
+        raise ValueError("temperature must be > 0 when samples_per_prompt > 1")
 
     if output_path is None:
         output_path = Path(checkpoint) / "test_responses.jsonl"
@@ -69,7 +76,9 @@ def generate_responses(
     model, tokenizer = load_model(model_name, checkpoint)
     model.eval()
 
-    print(f"Generating responses for {len(prompts)} test prompts...")
+    print(
+        f"Generating {samples_per_prompt} sample(s) for {len(prompts)} test prompts..."
+    )
 
     with open(output_path, "w") as f:
         for row in tqdm(prompts, desc="Generating"):
@@ -83,24 +92,34 @@ def generate_responses(
             )
             inputs = tokenizer(text, return_tensors="pt").to(model.device)
 
-            with torch.no_grad():
-                output = model.generate(
-                    **inputs,
-                    max_new_tokens=max_new_tokens,
-                    temperature=temperature,
-                    do_sample=temperature > 0,
-                    pad_token_id=tokenizer.pad_token_id,
-                )
+            for sample_index in range(samples_per_prompt):
+                if seed is not None:
+                    torch.manual_seed(seed + sample_index)
+                    if torch.cuda.is_available():
+                        torch.cuda.manual_seed_all(seed + sample_index)
 
-            input_len = inputs["input_ids"].shape[1]
-            response = tokenizer.decode(output[0][input_len:], skip_special_tokens=True)
+                with torch.no_grad():
+                    output = model.generate(
+                        **inputs,
+                        max_new_tokens=max_new_tokens,
+                        temperature=temperature,
+                        do_sample=temperature > 0,
+                        pad_token_id=tokenizer.pad_token_id,
+                    )
 
-            payload = {"prompt": prompt, "response": response}
-            for key in ("task_id", "category", "difficulty"):
-                if key in row:
-                    payload[key] = row[key]
+                input_len = inputs["input_ids"].shape[1]
+                response = tokenizer.decode(output[0][input_len:], skip_special_tokens=True)
 
-            f.write(json.dumps(payload) + "\n")
+                payload = {
+                    "prompt": prompt,
+                    "response": response,
+                    "sample_index": sample_index,
+                }
+                for key in ("task_id", "category", "difficulty"):
+                    if key in row:
+                        payload[key] = row[key]
+
+                f.write(json.dumps(payload) + "\n")
 
     print(f"Saved responses to {output_path}")
     return str(output_path)
@@ -113,6 +132,8 @@ def main():
     parser.add_argument("--test-path", type=str, default=str(DEFAULT_TEST))
     parser.add_argument("--output", type=str, default=None)
     parser.add_argument("--temperature", type=float, default=0.2)
+    parser.add_argument("--samples-per-prompt", type=int, default=1)
+    parser.add_argument("--seed", type=int, default=None)
     args = parser.parse_args()
 
     generate_responses(
@@ -121,6 +142,8 @@ def main():
         test_path=args.test_path,
         output_path=args.output,
         temperature=args.temperature,
+        samples_per_prompt=args.samples_per_prompt,
+        seed=args.seed,
     )
 
 

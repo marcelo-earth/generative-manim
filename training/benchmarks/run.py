@@ -12,6 +12,7 @@ from rich.table import Table
 
 from benchmarks import DEFAULT_SUITE
 from benchmarks.checks import run_static_checks
+from benchmarks.pass_k import estimate_pass_at_k
 from benchmarks.suite import BenchmarkTask, load_suite
 from rendering.manim_verifier import batch_verify
 from utils.code_extraction import clean_code
@@ -44,10 +45,9 @@ def export_prompts(
     return output
 
 
-def _load_responses(path: str | Path) -> dict[str, dict]:
+def _load_responses(path: str | Path) -> dict[str, list[dict]]:
     responses_path = Path(path)
-    responses_by_id: dict[str, dict] = {}
-    responses_by_prompt: dict[str, dict] = {}
+    grouped: dict[str, list[dict]] = defaultdict(list)
 
     with open(responses_path) as f:
         for line in f:
@@ -55,13 +55,13 @@ def _load_responses(path: str | Path) -> dict[str, dict]:
                 continue
             row = json.loads(line)
             if "task_id" in row:
-                responses_by_id[str(row["task_id"])] = row
+                grouped[f"task_id:{row['task_id']}"].append(row)
             if "prompt" in row:
-                responses_by_prompt[str(row["prompt"])] = row
+                grouped[f"prompt:{row['prompt']}"].append(row)
 
-    merged = dict(responses_by_prompt)
-    merged.update(responses_by_id)
-    return merged
+    for rows in grouped.values():
+        rows.sort(key=lambda row: int(row.get("sample_index", 0)))
+    return grouped
 
 
 def _animation_score(task: BenchmarkTask, animation_count: int) -> float:
@@ -75,6 +75,20 @@ def _task_score(render_success: bool, required_rate: float, animation_score: flo
     return round(score, 4)
 
 
+def _parse_pass_k(pass_k: str) -> list[int]:
+    values = []
+    for chunk in pass_k.split(","):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        values.append(int(chunk))
+    if not values:
+        raise ValueError("pass_k must contain at least one positive integer")
+    if any(value <= 0 for value in values):
+        raise ValueError("pass_k values must be positive")
+    return sorted(set(values))
+
+
 def evaluate_suite(
     suite_path: str | Path,
     responses_path: str | Path,
@@ -83,26 +97,31 @@ def evaluate_suite(
     run_name: str = "benchmark",
     max_workers: int = 4,
     timeout: int = 120,
+    pass_k_values: list[int] | None = None,
 ) -> tuple[dict, Path]:
     """Evaluate a response file against a frozen benchmark suite."""
     tasks = load_suite(suite_path)
     responses = _load_responses(responses_path)
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=True)
+    pass_k_values = pass_k_values or [1]
 
     prepared: list[tuple[BenchmarkTask, dict, str, object]] = []
     pending_codes: list[str] = []
     missing_results: list[dict] = []
 
     for task in tasks:
-        response = responses.get(task.task_id) or responses.get(task.prompt)
-        if response is None:
+        task_responses = responses.get(f"task_id:{task.task_id}") or responses.get(
+            f"prompt:{task.prompt}"
+        )
+        if task_responses is None:
             missing_results.append(
                 {
                     "task_id": task.task_id,
                     "category": task.category,
                     "difficulty": task.difficulty,
                     "prompt": task.prompt,
+                    "sample_index": None,
                     "success": False,
                     "error_type": "missing_response",
                     "error_message": "No response found for task",
@@ -118,10 +137,11 @@ def evaluate_suite(
             )
             continue
 
-        code = clean_code(response["response"])
-        static_result = run_static_checks(task, code)
-        pending_codes.append(code)
-        prepared.append((task, response, code, static_result))
+        for response in task_responses:
+            code = clean_code(response["response"])
+            static_result = run_static_checks(task, code)
+            pending_codes.append(code)
+            prepared.append((task, response, code, static_result))
 
     verify_results = (
         batch_verify(pending_codes, max_workers=max_workers, timeout=timeout)
@@ -144,6 +164,7 @@ def evaluate_suite(
                 "category": task.category,
                 "difficulty": task.difficulty,
                 "prompt": task.prompt,
+                "sample_index": response.get("sample_index", 0),
                 "success": verify_result.success,
                 "error_type": verify_result.error_type.value,
                 "error_message": verify_result.error_message,
@@ -160,31 +181,84 @@ def evaluate_suite(
             }
         )
 
-    results.sort(key=lambda row: row["task_id"])
+    results.sort(key=lambda row: (row["task_id"], row["sample_index"] is None, row["sample_index"] or 0))
 
     total_tasks = len(tasks)
-    successes = sum(1 for row in results if row["success"])
+    sample_results = [row for row in results if row["error_type"] != "missing_response"]
+    total_samples = len(sample_results)
+    sample_successes = sum(1 for row in sample_results if row["success"])
     missing = sum(1 for row in results if row["error_type"] == "missing_response")
     required_rate = (
-        sum(row["required_pattern_rate"] for row in results) / total_tasks if total_tasks else 0.0
+        sum(row["required_pattern_rate"] for row in sample_results) / total_samples
+        if total_samples
+        else 0.0
     )
     animation_rate = (
-        sum(row["animation_score"] for row in results) / total_tasks if total_tasks else 0.0
+        sum(row["animation_score"] for row in sample_results) / total_samples
+        if total_samples
+        else 0.0
     )
-    mean_score = sum(row["score"] for row in results) / total_tasks if total_tasks else 0.0
+    mean_score = (
+        sum(row["score"] for row in sample_results) / total_samples if total_samples else 0.0
+    )
+
+    grouped_results: dict[str, list[dict]] = defaultdict(list)
+    for row in sample_results:
+        grouped_results[row["task_id"]].append(row)
+
+    task_summaries = []
+    for task in tasks:
+        task_rows = grouped_results.get(task.task_id, [])
+        successes = sum(1 for row in task_rows if row["success"])
+        task_pass_at_k = {}
+        for k in pass_k_values:
+            value = estimate_pass_at_k(len(task_rows), successes, k)
+            task_pass_at_k[str(k)] = 0.0 if value is None else round(value, 4)
+
+        task_summaries.append(
+            {
+                "task_id": task.task_id,
+                "category": task.category,
+                "difficulty": task.difficulty,
+                "samples": len(task_rows),
+                "successes": successes,
+                "task_pass": successes > 0,
+                "best_score": round(max((row["score"] for row in task_rows), default=0.0), 4),
+                "mean_score": round(
+                    sum(row["score"] for row in task_rows) / len(task_rows), 4
+                )
+                if task_rows
+                else 0.0,
+                "pass_at_k": task_pass_at_k,
+            }
+        )
+
+    task_pass_rate = (
+        sum(1 for row in task_summaries if row["task_pass"]) / total_tasks if total_tasks else 0.0
+    )
+    best_of_n_score = (
+        sum(row["best_score"] for row in task_summaries) / total_tasks if total_tasks else 0.0
+    )
+
+    aggregate_pass_at_k = {}
+    for k in pass_k_values:
+        eligible = [row for row in task_summaries if row["samples"] >= k]
+        value = sum(row["pass_at_k"][str(k)] for row in task_summaries) / total_tasks if total_tasks else 0.0
+        aggregate_pass_at_k[str(k)] = {
+            "value": round(value, 4),
+            "eligible_tasks": len(eligible),
+        }
 
     by_category: dict[str, list[dict]] = defaultdict(list)
-    for row in results:
+    for row in task_summaries:
         by_category[row["category"]].append(row)
 
     category_summary = {}
     for category, items in sorted(by_category.items()):
         category_summary[category] = {
             "tasks": len(items),
-            "render_success_rate": round(
-                sum(1 for row in items if row["success"]) / len(items), 4
-            ),
-            "mean_score": round(sum(row["score"] for row in items) / len(items), 4),
+            "task_pass_rate": round(sum(1 for row in items if row["task_pass"]) / len(items), 4),
+            "best_of_n_score": round(sum(row["best_score"] for row in items) / len(items), 4),
         }
 
     summary = {
@@ -193,19 +267,30 @@ def evaluate_suite(
         "run_name": run_name,
         "responses_path": str(Path(responses_path).resolve()),
         "total_tasks": total_tasks,
-        "render_success_rate": round(successes / total_tasks if total_tasks else 0.0, 4),
+        "total_samples": total_samples,
+        "sample_render_success_rate": round(
+            sample_successes / total_samples if total_samples else 0.0, 4
+        ),
+        "task_pass_rate": round(task_pass_rate, 4),
+        "pass_at_k": aggregate_pass_at_k,
         "mean_required_pattern_rate": round(required_rate, 4),
         "mean_animation_score": round(animation_rate, 4),
-        "mean_score": round(mean_score, 4),
+        "mean_sample_score": round(mean_score, 4),
+        "mean_best_of_n_score": round(best_of_n_score, 4),
         "missing_tasks": missing,
         "categories": category_summary,
     }
 
     results_path = output / f"{model_name}_{run_name}_{summary['suite']}_results.jsonl"
     summary_path = output / f"{model_name}_{run_name}_{summary['suite']}_summary.json"
+    tasks_path = output / f"{model_name}_{run_name}_{summary['suite']}_tasks.jsonl"
 
     with open(results_path, "w") as f:
         for row in results:
+            f.write(json.dumps(row) + "\n")
+
+    with open(tasks_path, "w") as f:
+        for row in task_summaries:
             f.write(json.dumps(row) + "\n")
 
     with open(summary_path, "w") as f:
@@ -213,6 +298,7 @@ def evaluate_suite(
 
     _print_summary(summary)
     console.print(f"[green]Wrote detailed results to {results_path.resolve()}[/]")
+    console.print(f"[green]Wrote task summaries to {tasks_path.resolve()}[/]")
     console.print(f"[green]Wrote summary to {summary_path.resolve()}[/]")
     return summary, results_path
 
@@ -223,27 +309,34 @@ def _print_summary(summary: dict) -> None:
     table.add_column("Value", style="green")
     table.add_row("Suite", summary["suite"])
     table.add_row("Total Tasks", str(summary["total_tasks"]))
-    table.add_row("Render Success Rate", f"{summary['render_success_rate']:.1%}")
+    table.add_row("Total Samples", str(summary["total_samples"]))
+    table.add_row("Sample Render Success", f"{summary['sample_render_success_rate']:.1%}")
+    table.add_row("Task Pass Rate", f"{summary['task_pass_rate']:.1%}")
     table.add_row(
         "Required Pattern Rate", f"{summary['mean_required_pattern_rate']:.1%}"
     )
     table.add_row("Animation Score", f"{summary['mean_animation_score']:.1%}")
-    table.add_row("Mean Score", f"{summary['mean_score']:.1%}")
+    table.add_row("Mean Sample Score", f"{summary['mean_sample_score']:.1%}")
+    table.add_row("Mean Best-of-N Score", f"{summary['mean_best_of_n_score']:.1%}")
     table.add_row("Missing Tasks", str(summary["missing_tasks"]))
+    for k, details in summary["pass_at_k"].items():
+        value = details["value"]
+        label = "n/a" if value is None else f"{value:.1%}"
+        table.add_row(f"pass@{k}", f"{label} ({details['eligible_tasks']} tasks)")
     console.print(table)
 
     category_table = Table(title="Category Breakdown")
     category_table.add_column("Category", style="cyan")
     category_table.add_column("Tasks", justify="right")
-    category_table.add_column("Render Success", justify="right")
-    category_table.add_column("Mean Score", justify="right")
+    category_table.add_column("Task Pass Rate", justify="right")
+    category_table.add_column("Best-of-N Score", justify="right")
 
     for category, details in summary["categories"].items():
         category_table.add_row(
             category,
             str(details["tasks"]),
-            f"{details['render_success_rate']:.1%}",
-            f"{details['mean_score']:.1%}",
+            f"{details['task_pass_rate']:.1%}",
+            f"{details['best_of_n_score']:.1%}",
         )
 
     console.print(category_table)
@@ -267,6 +360,7 @@ def main() -> None:
     evaluate_parser.add_argument("--run-name", type=str, default="benchmark")
     evaluate_parser.add_argument("--workers", type=int, default=4)
     evaluate_parser.add_argument("--timeout", type=int, default=120)
+    evaluate_parser.add_argument("--pass-k", type=str, default="1,5")
 
     args = parser.parse_args()
 
@@ -282,6 +376,7 @@ def main() -> None:
         run_name=args.run_name,
         max_workers=args.workers,
         timeout=args.timeout,
+        pass_k_values=_parse_pass_k(args.pass_k),
     )
 
 

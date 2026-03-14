@@ -35,11 +35,15 @@ Each task contains:
 - `disallowed_patterns`
 - `min_animation_count`
 
-The scoring model is intentionally simple and transparent:
+The sample-level scoring model is intentionally simple and transparent:
 
 - `70%` render success
 - `20%` required-pattern coverage
 - `10%` animation-count compliance
+
+For stochastic models, the benchmark also reports task-level `pass@k`.
+
+That matters because programming models are not judged well by a single sample. A strong model may fail once and succeed on the second or third try. `pass@k` measures the probability that at least one of `k` samples solves the task, using the standard code-benchmark estimator.
 
 This is a good starting point for expert-programming evaluation because it is:
 
@@ -65,14 +69,17 @@ python -m benchmarks.run export \
   --output ./outputs/benchmarks/core_v1_prompts.jsonl
 ```
 
-Generate model responses against that prompt file:
+Generate multiple samples per prompt for pass@k:
 
 ```bash
 python -m eval.generate_responses \
   --model qwen2.5-coder-7b \
   --checkpoint ./outputs/grpo/qwen2.5-coder-7b \
   --test-path ./outputs/benchmarks/core_v1_prompts.jsonl \
-  --output ./outputs/benchmarks/qwen_core_v1_responses.jsonl
+  --output ./outputs/benchmarks/qwen_core_v1_responses.jsonl \
+  --temperature 0.8 \
+  --samples-per-prompt 5 \
+  --seed 42
 ```
 
 Evaluate the responses:
@@ -83,13 +90,16 @@ python -m benchmarks.run evaluate \
   --responses ./outputs/benchmarks/qwen_core_v1_responses.jsonl \
   --output-dir ./outputs/benchmarks \
   --model-name qwen2.5-coder-7b \
-  --run-name grpo
+  --run-name grpo \
+  --pass-k 1,5
 ```
+
+If you request `pass@5`, make sure you generated at least `5` samples per task. The summary also reports how many tasks were actually eligible for each `k`.
 
 ## Result files
 
 Evaluation writes:
 
 - `*_results.jsonl`: per-task outcomes
+- `*_tasks.jsonl`: per-task aggregated summaries, including pass@k
 - `*_summary.json`: aggregate metrics and category breakdown
-
