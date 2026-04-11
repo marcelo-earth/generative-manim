@@ -65,8 +65,8 @@ def construct(self):
             # We map standard gemini aliases
             if model == "gemini-2.5-flash":
                 use_model = "gemini-2.5-flash"
-            elif model == "gemini-3-flash":
-                use_model = "gemini-3-flash"
+            elif model == "gemini-2.5-flash":
+                use_model = "gemini-2.5-flash"
             else:
                 use_model = model
 

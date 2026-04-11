@@ -61,7 +61,7 @@ It began as a prototype of a web app that uses [GPT-4](https://openai.com/resear
 | GM Claude Sonnet              | Claude Sonnet 3 model from Sonnet adapted with our custom System Prompt   | claude-3-sonnet-20240229   | ✅    |
 | GM Claude Sonnet 3.5          | Claude Sonnet 3.5 model from Sonnet adapted with our custom System Prompt | claude-3-5-sonnet-20240620 | ✅    |
 | GM Gemini 2.5 Flash           | Google's fast Gemini 2.5 Flash accessed via google-genai SDK              | gemini-2.5-flash           | ✅    |
-| GM Gemini 3 Flash             | Google's latest Gemini 3 Flash accessed via google-genai SDK              | gemini-3-flash             | ✅    |
+
 | GM Qwen 2.5 Coder 7B          | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | Qwen2.5-Coder-7B-Instruct | 🚧    |
 | GM DeepSeek Coder V2 Lite      | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | DeepSeek-Coder-V2-Lite     | 🚧    |
 | GM CodeLlama 7B                | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | CodeLlama-7b-Instruct      | 🚧    |
