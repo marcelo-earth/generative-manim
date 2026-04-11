@@ -63,10 +63,10 @@ def construct(self):
         client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
         try:
             # We map standard gemini aliases
-            if model == "gemini-1.5-pro":
-                use_model = "gemini-1.5-pro"
-            elif model == "gemini-2.0-flash":
-                use_model = "gemini-2.5-flash" # fallback or actual name when released
+            if model == "gemini-2.5-flash":
+                use_model = "gemini-2.5-flash"
+            elif model == "gemini-3-flash":
+                use_model = "gemini-3-flash"
             else:
                 use_model = model
 
