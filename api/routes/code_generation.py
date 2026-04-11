@@ -2,6 +2,10 @@ from flask import Blueprint, jsonify, request
 import anthropic
 import os
 from openai import OpenAI
+try:
+    from google import genai
+except ImportError:
+    genai = None
 
 code_generation_bp = Blueprint('code_generation', __name__)
 
@@ -50,6 +54,33 @@ def construct(self):
 
             return jsonify({"code": code})
 
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    elif model.startswith("gemini-"):
+        if genai is None:
+            return jsonify({"error": "google-genai pkg not installed"}), 500
+        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+        try:
+            # We map standard gemini aliases
+            if model == "gemini-1.5-pro":
+                use_model = "gemini-1.5-pro"
+            elif model == "gemini-2.0-flash":
+                use_model = "gemini-2.5-flash" # fallback or actual name when released
+            else:
+                use_model = model
+
+            response = client.models.generate_content(
+                model=use_model,
+                contents=f"{general_system_prompt}\n\nUser request: {prompt_content}",
+            )
+            # Remove any markdown code block artifacts if present
+            code = response.text
+            if code.startswith("```"):
+                code = "\n".join(code.split("\n")[1:])
+            if code.endswith("```"):
+                code = "\n".join(code.split("\n")[:-1])
+            return jsonify({"code": code.strip()})
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
