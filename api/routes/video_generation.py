@@ -5,6 +5,7 @@ import json
 import subprocess
 import uuid
 from openai import OpenAI
+from api.llm_providers import generate_gemini_content
 
 video_generation_bp = Blueprint('video_generation', __name__)
 
@@ -56,6 +57,11 @@ def generate_manim_code(prompt, engine="openai", model="gpt-4o"):
             )
             code = "".join(block.text for block in response.content)
             return code
+        except Exception as e:
+            raise Exception(f"Error generating code with {model}: {str(e)}")
+    elif engine == "gemini" or model.startswith("gemini-"):
+        try:
+            return generate_gemini_content(model, CODE_GENERATION_SYSTEM_PROMPT, prompt)
         except Exception as e:
             raise Exception(f"Error generating code with {model}: {str(e)}")
     else:

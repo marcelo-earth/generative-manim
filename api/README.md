@@ -28,6 +28,7 @@ And, depending on the model you want to use, you will need to have an API key fo
 
 - [OpenAI](https://openai.com/api/)
 - [Anthropic](https://www.anthropic.com/api)
+- [Google Gemini](https://ai.google.dev/gemini-api)
 
 If you are on MacOS, make sure you have `pkg-config` and `cairo` installed. You can install them using Homebrew:
 
@@ -95,7 +96,9 @@ Let's say you want to create a simple animation that shows a square transforming
 curl -X POST http://127.0.0.1:8080/v1/code/generation \
 -H "Content-Type: application/json" \
 -d '{
-  "prompt": "Create a Manim animation that shows a square transforming into a circle"
+  "prompt": "Create a Manim animation that shows a square transforming into a circle",
+  "engine": "gemini",
+  "model": "gemini-2.5-flash"
 }'
 ```
 

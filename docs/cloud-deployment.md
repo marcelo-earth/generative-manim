@@ -35,6 +35,7 @@ Set these variables in your cloud provider dashboard:
 PORT=8080
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
+GEMINI_API_KEY=your_gemini_key
 USE_LOCAL_STORAGE=true
 BASE_URL=https://your-api-domain.example
 ```
@@ -109,6 +110,7 @@ docker run --rm -p 8080:8080 \
   -e PORT=8080 \
   -e OPENAI_API_KEY="$OPENAI_API_KEY" \
   -e ANTHROPIC_API_KEY="$ANTHROPIC_API_KEY" \
+  -e GEMINI_API_KEY="$GEMINI_API_KEY" \
   -e USE_LOCAL_STORAGE=true \
   -e BASE_URL="http://localhost:8080" \
   generative-manim-api

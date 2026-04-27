@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 import anthropic
 import os
 from openai import OpenAI
+from api.llm_providers import generate_gemini_content
 
 code_generation_bp = Blueprint('code_generation', __name__)
 
@@ -10,6 +11,7 @@ ENGINE_DEFAULTS = {
     "openai": "gpt-4o",
     "anthropic": "claude-3-5-sonnet-20241022",
     "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
+    "gemini": "gemini-2.5-flash",
 }
 
 FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
@@ -80,6 +82,13 @@ def construct(self):
 
             return jsonify({"code": code})
 
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    elif engine == "gemini" or model.startswith("gemini-"):
+        try:
+            code = generate_gemini_content(model, general_system_prompt, prompt_content)
+            return jsonify({"code": code})
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
