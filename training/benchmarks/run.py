@@ -89,6 +89,10 @@ def _parse_pass_k(pass_k: str) -> list[int]:
     return sorted(set(values))
 
 
+def _safe_name(value: str) -> str:
+    return value.replace("/", "__").replace(":", "__")
+
+
 def evaluate_suite(
     suite_path: str | Path,
     responses_path: str | Path,
@@ -281,9 +285,11 @@ def evaluate_suite(
         "categories": category_summary,
     }
 
-    results_path = output / f"{model_name}_{run_name}_{summary['suite']}_results.jsonl"
-    summary_path = output / f"{model_name}_{run_name}_{summary['suite']}_summary.json"
-    tasks_path = output / f"{model_name}_{run_name}_{summary['suite']}_tasks.jsonl"
+    safe_model_name = _safe_name(model_name)
+    safe_run_name = _safe_name(run_name)
+    results_path = output / f"{safe_model_name}_{safe_run_name}_{summary['suite']}_results.jsonl"
+    summary_path = output / f"{safe_model_name}_{safe_run_name}_{summary['suite']}_summary.json"
+    tasks_path = output / f"{safe_model_name}_{safe_run_name}_{summary['suite']}_tasks.jsonl"
 
     with open(results_path, "w") as f:
         for row in results:

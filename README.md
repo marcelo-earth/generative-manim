@@ -32,6 +32,9 @@
   <a href="">
     <img src="https://img.shields.io/static/v1?label=Anthropic&message=Claude&color=000000&logo=anthropic&style=flat" />
   </a>
+  <a href="./docs/featherless.md">
+    <img src="https://img.shields.io/static/v1?label=Featherless&message=Open%20Models&color=6D28D9&style=flat" />
+  </a>
 </p>
 
 ---
@@ -60,6 +63,7 @@ It began as a prototype of a web app that uses [GPT-4](https://openai.com/resear
 | GM GPT-3.5 Physics Fine Tuned | Fine-tuned GPT-3.5 model trained to generate Physics animations           | GPT-3.5                    | ✅    |
 | GM Claude Sonnet              | Claude Sonnet 3 model from Sonnet adapted with our custom System Prompt   | claude-3-sonnet-20240229   | ✅    |
 | GM Claude Sonnet 3.5          | Claude Sonnet 3.5 model from Sonnet adapted with our custom System Prompt | claude-3-5-sonnet-20240620 | ✅    |
+| GM Featherless Open Models    | OpenAI-compatible access to hosted open-weight models via Featherless     | Qwen, DeepSeek, CodeLlama, etc. | ✅ |
 | GM Qwen 2.5 Coder 7B          | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | Qwen2.5-Coder-7B-Instruct | 🚧    |
 | GM DeepSeek Coder V2 Lite      | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | DeepSeek-Coder-V2-Lite     | 🚧    |
 | GM CodeLlama 7B                | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | CodeLlama-7b-Instruct      | 🚧    |
@@ -122,6 +126,16 @@ Or run a whole benchmark matrix from a manifest:
 cd training
 python -m benchmarks.matrix --manifest benchmarks/manifests/open_source_core_v1.json --dry-run
 ```
+
+You can also benchmark hosted open-weight models through Featherless:
+
+```bash
+export FEATHERLESS_API_KEY="your-featherless-key"
+cd training
+python -m benchmarks.matrix --manifest benchmarks/manifests/featherless_core_v1.json --only qwen2.5-coder-7b-instruct-featherless
+```
+
+See [`docs/featherless.md`](./docs/featherless.md) for API usage, smoke tests, and the full Featherless benchmark workflow.
 
 ## ✨ Sponsors
 

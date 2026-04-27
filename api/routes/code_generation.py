@@ -5,11 +5,41 @@ from openai import OpenAI
 
 code_generation_bp = Blueprint('code_generation', __name__)
 
+
+ENGINE_DEFAULTS = {
+    "openai": "gpt-4o",
+    "anthropic": "claude-3-5-sonnet-20241022",
+    "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
+}
+
+FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
+
+
+def get_openai_compatible_client(engine: str) -> OpenAI:
+    if engine == "featherless":
+        api_key = os.getenv("FEATHERLESS_API_KEY")
+        if not api_key:
+            raise ValueError("FEATHERLESS_API_KEY is required when engine='featherless'")
+        return OpenAI(base_url=FEATHERLESS_BASE_URL, api_key=api_key)
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY is required when engine='openai'")
+    return OpenAI(api_key=api_key)
+
+
 @code_generation_bp.route('/v1/code/generation', methods=['POST'])
 def generate_code():
     body = request.json
     prompt_content = body.get("prompt", "")
-    model = body.get("model", "gpt-4o")
+    engine = body.get("engine", "openai")
+
+    if engine not in ENGINE_DEFAULTS:
+        return jsonify({
+            "error": f"Invalid engine. Must be one of: {', '.join(ENGINE_DEFAULTS.keys())}"
+        }), 400
+
+    model = body.get("model", ENGINE_DEFAULTS[engine])
 
     general_system_prompt = """
 You are an assistant that knows about Manim. Manim is a mathematical animation engine that is used to create videos programmatically.
@@ -33,7 +63,7 @@ def construct(self):
 4. Do not explain the code, only the code.
     """
 
-    if model.startswith("claude-"):
+    if engine == "anthropic" or model.startswith("claude-"):
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         messages = [{"role": "user", "content": prompt_content}]
         try:
@@ -54,13 +84,13 @@ def construct(self):
             return jsonify({"error": str(e)}), 500
 
     else:
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         messages = [
             {"role": "system", "content": general_system_prompt},
             {"role": "user", "content": prompt_content},
         ]
 
         try:
+            client = get_openai_compatible_client(engine)
             response = client.chat.completions.create(
                 model=model,
                 messages=messages,

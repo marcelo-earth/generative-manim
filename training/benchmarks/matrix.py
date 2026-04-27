@@ -100,40 +100,74 @@ def run_matrix(
 
     for run in selected_runs:
         model_name = run["model"]
+        model_id = run.get("model_id", model_name)
         run_name = run["run_name"]
         run_output_dir = output_dir / model_name / run_name
         if not dry_run:
             run_output_dir.mkdir(parents=True, exist_ok=True)
         responses_path = _resolve_path(run.get("responses_path"))
         checkpoint_path = _resolve_path(run.get("checkpoint"))
+        provider = run.get("provider")
 
         if responses_path is None:
-            if checkpoint_path is None:
+            if provider:
+                generate_command = [
+                    sys.executable,
+                    "-m",
+                    "eval.generate_remote_responses",
+                    "--provider",
+                    provider,
+                    "--model",
+                    model_id,
+                    "--test-path",
+                    str(prompts_path),
+                    "--output",
+                    str(run_output_dir / "responses.jsonl"),
+                    "--temperature",
+                    str(run.get("temperature", temperature)),
+                    "--samples-per-prompt",
+                    str(run.get("samples_per_prompt", samples_per_prompt)),
+                    "--max-tokens",
+                    str(run.get("max_tokens", manifest.get("max_tokens", 2048))),
+                ]
+                if run.get("base_url"):
+                    generate_command.extend(["--base-url", run["base_url"]])
+                if run.get("api_key_env"):
+                    generate_command.extend(["--api-key-env", run["api_key_env"]])
+                if run.get("limit") is not None:
+                    generate_command.extend(["--limit", str(run["limit"])])
+                effective_seed = run.get("seed", seed)
+                if effective_seed is not None:
+                    generate_command.extend(["--seed", str(effective_seed)])
+                _run_command(generate_command, dry_run=dry_run)
+                responses_path = run_output_dir / "responses.jsonl"
+            elif checkpoint_path is None:
                 raise ValueError(
-                    f"Run {run_name} must define either checkpoint or responses_path"
+                    f"Run {run_name} must define checkpoint, provider, or responses_path"
                 )
-            generate_command = [
-                sys.executable,
-                "-m",
-                "eval.generate_responses",
-                "--model",
-                model_name,
-                "--checkpoint",
-                str(checkpoint_path),
-                "--test-path",
-                str(prompts_path),
-                "--output",
-                str(run_output_dir / "responses.jsonl"),
-                "--temperature",
-                str(run.get("temperature", temperature)),
-                "--samples-per-prompt",
-                str(run.get("samples_per_prompt", samples_per_prompt)),
-            ]
-            effective_seed = run.get("seed", seed)
-            if effective_seed is not None:
-                generate_command.extend(["--seed", str(effective_seed)])
-            _run_command(generate_command, dry_run=dry_run)
-            responses_path = run_output_dir / "responses.jsonl"
+            else:
+                generate_command = [
+                    sys.executable,
+                    "-m",
+                    "eval.generate_responses",
+                    "--model",
+                    model_name,
+                    "--checkpoint",
+                    str(checkpoint_path),
+                    "--test-path",
+                    str(prompts_path),
+                    "--output",
+                    str(run_output_dir / "responses.jsonl"),
+                    "--temperature",
+                    str(run.get("temperature", temperature)),
+                    "--samples-per-prompt",
+                    str(run.get("samples_per_prompt", samples_per_prompt)),
+                ]
+                effective_seed = run.get("seed", seed)
+                if effective_seed is not None:
+                    generate_command.extend(["--seed", str(effective_seed)])
+                _run_command(generate_command, dry_run=dry_run)
+                responses_path = run_output_dir / "responses.jsonl"
         else:
             print(f"Using pre-generated responses for {model_name}/{run_name}: {responses_path}")
 
