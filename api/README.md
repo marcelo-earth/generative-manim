@@ -119,6 +119,8 @@ curl -N -X POST http://127.0.0.1:8080/v1/chat/generation \
 
 When executed, the API will return the stream of the latest assistant message.
 
+The chat generation endpoint includes a compact Manim reference index in its system prompt. See the [Manim Prompt Context guide](../docs/manim-prompt-context.md) for where that context lives and how it is used.
+
 ### 🎥 How to render a Manim video?
 
 Let's say you want to render a circle scaling animation. You can use the `/v1/video/rendering` endpoint with a POST request. Like this:
