@@ -130,6 +130,13 @@ curl -X POST http://127.0.0.1:8080/v1/video/rendering \
   "code": "from manim import *\n\nclass DrawCircle(Scene):\n    def construct(self):\n        # Create a circle object\n        circle = Circle()\n\n        # Use the animate API to smoothly scale the circle down to a radius of 0.1\n        self.play(Create(circle))\n",
   "file_name": "scene_56861",
   "file_class": "DrawCircle",
+  "aspect_ratio": "9:16",
   "stream": true
 }'
 ```
+
+The `aspect_ratio` field controls the render dimensions. Supported values are:
+
+- `16:9` for landscape videos
+- `9:16` for portrait videos
+- `1:1` for square videos
