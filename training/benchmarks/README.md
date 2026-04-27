@@ -132,6 +132,31 @@ python -m benchmarks.matrix \
 The manifest can mix:
 
 - local checkpoints via `checkpoint`
+- hosted OpenAI-compatible providers via `provider` and `model_id`
 - pre-generated API outputs via `responses_path`
 
 That lets the same benchmark stack compare open-source checkpoints and hosted model baselines.
+
+Example hosted provider run:
+
+```json
+{
+  "model": "qwen2.5-coder-7b-instruct-featherless",
+  "model_id": "Qwen/Qwen2.5-Coder-7B-Instruct",
+  "run_name": "featherless",
+  "provider": "featherless"
+}
+```
+
+`model` is the local report name. `model_id` is the provider model identifier sent to the API.
+
+The included Featherless manifest uses this path:
+
+```bash
+export FEATHERLESS_API_KEY="your-featherless-key"
+python -m benchmarks.matrix \
+  --manifest benchmarks/manifests/featherless_core_v1.json \
+  --dry-run
+```
+
+For hosted runs, `benchmarks.matrix` calls `eval.generate_remote_responses` before evaluating the generated responses with the same render-based benchmark flow.
