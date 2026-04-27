@@ -76,13 +76,13 @@ If you want to suggest a new model, please open an issue in the [repository](htt
 
 We're training **open-source models** to generate Manim code using a 3-stage pipeline that distills from GPT-4o:
 
-1. **SFT** (Supervised Fine-Tuning) — Train on 5,000+ validated prompt→code pairs
-2. **DPO** (Direct Preference Optimization) — Learn from render success/failure pairs
-3. **GRPO** (Group Relative Policy Optimization) — RL with the Manim renderer as a deterministic reward signal
+1. **SFT** (Supervised Fine-Tuning): Train on 5,000+ validated prompt→code pairs
+2. **DPO** (Direct Preference Optimization): Learn from render success/failure pairs
+3. **GRPO** (Group Relative Policy Optimization): RL with the Manim renderer as a deterministic reward signal
 
-The key insight: Manim is a **deterministic verifier** — code either renders or crashes. This replaces the need for a reward model, similar to how DeepSeek-R1 uses math answer checkers.
+The key insight: Manim is a **deterministic verifier**: code either renders or crashes. This replaces the need for a reward model, similar to how DeepSeek-R1 uses math answer checkers.
 
-**Base models**: Qwen 2.5 Coder 7B, DeepSeek Coder V2 Lite, CodeLlama 7B — all using QLoRA (4-bit) to fit on free Kaggle T4 GPUs.
+**Base models**: Qwen 2.5 Coder 7B, DeepSeek Coder V2 Lite, CodeLlama 7B. All use QLoRA (4-bit) to fit on free Kaggle T4 GPUs.
 
 ## 📏 Benchmark
 
