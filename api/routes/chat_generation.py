@@ -19,6 +19,8 @@ import uuid
 
 chat_generation_bp = Blueprint("chat_generation", __name__)
 
+FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
+
 
 animo_functions = {
     "openai": [
@@ -135,7 +137,8 @@ def generate_code_chat():
     ENGINE_DEFAULTS = {
         "openai": "gpt-4o",
         "anthropic": "claude-35-sonnet",
-        "deepseek": "r1"
+        "deepseek": "r1",
+        "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
     }
 
     # Validate and set the model based on engine
@@ -150,10 +153,11 @@ def generate_code_chat():
     VALID_MODELS = {
         "openai": ["gpt-4o", "o1-mini"],
         "anthropic": ["claude-35-sonnet"],
-        "deepseek": ["r1"]
+        "deepseek": ["r1"],
+        "featherless": None,
     }
 
-    if model not in VALID_MODELS[engine]:
+    if VALID_MODELS[engine] is not None and model not in VALID_MODELS[engine]:
         return jsonify({
             "error": f"Invalid model '{model}' for engine '{engine}'. Valid models are: {', '.join(VALID_MODELS[engine])}"
         }), 400
@@ -323,6 +327,56 @@ That message should appear after the code, as the last message of the conversati
 """
 
     messages.insert(0, {"role": "system", "content": general_system_prompt})
+
+    if engine == "featherless":
+        api_key = os.environ.get("FEATHERLESS_API_KEY")
+        if not api_key:
+            return jsonify({"error": "FEATHERLESS_API_KEY is required when engine='featherless'"}), 500
+
+        client = openai.OpenAI(base_url=FEATHERLESS_BASE_URL, api_key=api_key)
+        featherless_system_prompt = """You are an assistant that generates complete Manim animation code.
+
+Rules:
+1. Always use GenScene as the class name.
+2. Always use self.play() to play animations.
+3. Always start with `from manim import *`.
+4. Output only Python code unless the user asks a conceptual question.
+5. The code must be complete and runnable."""
+        messages[0] = {"role": "system", "content": featherless_system_prompt}
+
+        def generate():
+            try:
+                stream = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    temperature=data.get("temperature", 0.2),
+                    max_tokens=data.get("maxTokens", 2048),
+                    stream=True,
+                )
+                for chunk in stream:
+                    content = chunk.choices[0].delta.content
+                    if not content:
+                        continue
+                    if is_for_platform:
+                        text_obj = json.dumps({"type": "text", "text": content})
+                        yield f"{text_obj}\n"
+                    else:
+                        yield content
+            except Exception as e:
+                error_message = str(e)
+                if is_for_platform:
+                    yield f"{json.dumps({'type': 'error', 'text': error_message})}\n"
+                else:
+                    yield f"Error: {error_message}"
+
+        response = Response(
+            stream_with_context(generate()),
+            content_type="text/plain; charset=utf-8",
+        )
+        if is_for_platform:
+            response.headers['Transfer-Encoding'] = 'chunked'
+            response.headers['x-vercel-ai-data-stream'] = 'v1'
+        return response
 
     if engine == "anthropic":
         client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
