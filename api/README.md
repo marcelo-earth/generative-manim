@@ -53,6 +53,8 @@ pip install -r requirements.txt
 
 Now you have the option of running the API locally or using Docker.
 
+For production or cloud hosting, see the [Cloud Deployment Guide](../docs/cloud-deployment.md).
+
 ### Running the API locally
 
 3. Run the `run.py` script to start the API server.

@@ -49,6 +49,7 @@ It began as a prototype of a web app that uses [GPT-4](https://openai.com/resear
 
 - 🖐️ [Generative Manim Demo](https://generative-manim.vercel.app/): Check out the demo of Generative Manim!
 - 🔬 [Generative Manim API](https://github.com/360macky/generative-manim/tree/main/api): Build over the Animation Processing Interface, or API.
+- ☁️ [Cloud Deployment Guide](./docs/cloud-deployment.md): Deploy the API on Render or another Docker-based cloud platform.
 - 🧑‍💻 [Generative Manim Developers](https://discord.gg/HkbYEGybGv): Join our Discord server, learn new things, share your creations and more!
 - 🍎 [Generative Manim Streamlit (Legacy)](https://github.com/360macky/generative-manim/tree/main/streamlit): First LLM exploration of LLMs and Animation.
 
