@@ -50,7 +50,7 @@ It began as a prototype of a web app that uses [GPT-4](https://openai.com/resear
 - 🖐️ [Generative Manim Demo](https://generative-manim.vercel.app/): Check out the demo of Generative Manim!
 - 🔬 [Generative Manim API](https://github.com/360macky/generative-manim/tree/main/api): Build over the Animation Processing Interface, or API.
 - ☁️ [Cloud Deployment Guide](./docs/cloud-deployment.md): Deploy the API on Render or another Docker-based cloud platform.
-- 🧑‍💻 [Generative Manim Developers](https://discord.gg/HkbYEGybGv): Join our Discord server, learn new things, share your creations and more!
+- 🧑‍💻 [Generative Manim Developers](https://discord.gg/SNdbPU2AMM): Join our Discord server, learn new things, share your creations and more!
 - 🍎 [Generative Manim Streamlit (Legacy)](https://github.com/360macky/generative-manim/tree/main/streamlit): First LLM exploration of LLMs and Animation.
 
 ## 💻 Models
@@ -71,7 +71,7 @@ It began as a prototype of a web app that uses [GPT-4](https://openai.com/resear
 
 ### 📡 New Models
 
-If you want to suggest a new model, please open an issue in the [repository](https://github.com/360macky/generative-manim/issues) or talk with us in our [Discord server](https://discord.gg/HkbYEGybGv).
+If you want to suggest a new model, please open an issue in the [repository](https://github.com/360macky/generative-manim/issues) or talk with us in our [Discord server](https://discord.gg/SNdbPU2AMM).
 
 ## 🧠 Training Pipeline
 
@@ -148,4 +148,4 @@ Generative Manim is an open source project.
 
 If you want to be the author of a new feature, fix a bug or contribute with something new.
 
-Fork the repository and make changes as you like. [Pull requests](https://github.com/360macky/generative-manim/pulls) are warmly welcome. Remember you can also join our [Discord server](https://discord.gg/HkbYEGybGv) to discuss new features, bugs or any other topic.
+Fork the repository and make changes as you like. [Pull requests](https://github.com/360macky/generative-manim/pulls) are warmly welcome. Remember you can also join our [Discord server](https://discord.gg/SNdbPU2AMM) to discuss new features, bugs or any other topic.
