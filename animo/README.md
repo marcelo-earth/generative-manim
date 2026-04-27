@@ -20,7 +20,7 @@
   <a href="https://github.com/marcelo-earth/generative-manim">
     <img src="https://img.shields.io/static/v1?label=GitHub&message=Repository&color=181717&logo=github&style=flat" />
   </a>
-  <a href="https://discord.com/invite/HkbYEGybGv">
+  <a href="https://discord.com/invite/SNdbPU2AMM">
     <img src="https://img.shields.io/static/v1?label=Discord&message=Community&color=5865F2&logo=discord&style=flat" />
   </a>
   <a href="https://pypi.org/project/animo/">
@@ -176,7 +176,7 @@ poetry install
 
 ### Community
 
-Join our [Discord community](https://discord.com/invite/HkbYEGybGv) to connect with other Animo users, share your creations, and get help.
+Join our [Discord community](https://discord.com/invite/SNdbPU2AMM) to connect with other Animo users, share your creations, and get help.
 
 ## 📄 License
 

@@ -5,10 +5,7 @@ import json
 import subprocess
 import uuid
 from openai import OpenAI
-try:
-    from google import genai
-except ImportError:
-    genai = None
+from api.llm_providers import generate_gemini_content
 
 video_generation_bp = Blueprint('video_generation', __name__)
 
@@ -62,21 +59,9 @@ def generate_manim_code(prompt, engine="openai", model="gpt-4o"):
             return code
         except Exception as e:
             raise Exception(f"Error generating code with {model}: {str(e)}")
-    elif model.startswith("gemini-"):
-        if genai is None:
-            raise Exception("google-genai pkg not installed")
-        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    elif engine == "gemini" or model.startswith("gemini-"):
         try:
-            response = client.models.generate_content(
-                model=model,
-                contents=f"{CODE_GENERATION_SYSTEM_PROMPT}\n\nUser request: {prompt}",
-            )
-            code = response.text
-            if code.startswith("```"):
-                code = "\n".join(code.split("\n")[1:])
-            if code.endswith("```"):
-                code = "\n".join(code.split("\n")[:-1])
-            return code
+            return generate_gemini_content(model, CODE_GENERATION_SYSTEM_PROMPT, prompt)
         except Exception as e:
             raise Exception(f"Error generating code with {model}: {str(e)}")
     else:

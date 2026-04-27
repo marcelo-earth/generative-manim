@@ -46,7 +46,7 @@
 
 - 🖐️ [Generative Manim 演示](https://generative-manim.vercel.app/): 查看 Generative Manim 的演示！
 - 🔬 [Generative Manim API](https://github.com/360macky/generative-manim/tree/main/api): 基于动画处理接口（API）进行构建。
-- 🧑‍💻 [Generative Manim 开发者](https://discord.gg/HkbYEGybGv): 加入我们的 Discord 服务器，学习新知识，分享你的创作等等！
+- 🧑‍💻 [Generative Manim 开发者](https://discord.gg/SNdbPU2AMM): 加入我们的 Discord 服务器，学习新知识，分享你的创作等等！
 - 🍎 [Generative Manim Streamlit (旧版)](https://github.com/360macky/generative-manim/tree/main/streamlit): 对 LLM 和动画的首次探索。
 
 ## 💻 模型
@@ -63,7 +63,7 @@
 
 ### 📡 新模型
 
-如果你想建议一个新模型，请在[仓库](https://github.com/360macky/generative-manim/issues)中提交 Issue，或者在我们的 [Discord 服务器](https://discord.gg/HkbYEGybGv)中与我们交流。
+如果你想建议一个新模型，请在[仓库](https://github.com/360macky/generative-manim/issues)中提交 Issue，或者在我们的 [Discord 服务器](https://discord.gg/SNdbPU2AMM)中与我们交流。
 
 ## ✨ 赞助商
 
@@ -75,4 +75,4 @@ Generative Manim 是一个开源项目。
 
 如果你想开发新功能、修复 Bug 或贡献新内容。
 
-请 Fork 本仓库并按需进行更改。热烈欢迎提交 [Pull requests](https://github.com/360macky/generative-manim/pulls)。记得你也可以加入我们的 [Discord 服务器](https://discord.gg/HkbYEGybGv)来讨论新功能、Bug 或任何其他话题。
+请 Fork 本仓库并按需进行更改。热烈欢迎提交 [Pull requests](https://github.com/360macky/generative-manim/pulls)。记得你也可以加入我们的 [Discord 服务器](https://discord.gg/SNdbPU2AMM)来讨论新功能、Bug 或任何其他话题。

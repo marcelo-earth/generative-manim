@@ -2,18 +2,46 @@ from flask import Blueprint, jsonify, request
 import anthropic
 import os
 from openai import OpenAI
-try:
-    from google import genai
-except ImportError:
-    genai = None
+from api.llm_providers import generate_gemini_content
 
 code_generation_bp = Blueprint('code_generation', __name__)
+
+
+ENGINE_DEFAULTS = {
+    "openai": "gpt-4o",
+    "anthropic": "claude-3-5-sonnet-20241022",
+    "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
+    "gemini": "gemini-2.5-flash",
+}
+
+FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
+
+
+def get_openai_compatible_client(engine: str) -> OpenAI:
+    if engine == "featherless":
+        api_key = os.getenv("FEATHERLESS_API_KEY")
+        if not api_key:
+            raise ValueError("FEATHERLESS_API_KEY is required when engine='featherless'")
+        return OpenAI(base_url=FEATHERLESS_BASE_URL, api_key=api_key)
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY is required when engine='openai'")
+    return OpenAI(api_key=api_key)
+
 
 @code_generation_bp.route('/v1/code/generation', methods=['POST'])
 def generate_code():
     body = request.json
     prompt_content = body.get("prompt", "")
-    model = body.get("model", "gpt-4o")
+    engine = body.get("engine", "openai")
+
+    if engine not in ENGINE_DEFAULTS:
+        return jsonify({
+            "error": f"Invalid engine. Must be one of: {', '.join(ENGINE_DEFAULTS.keys())}"
+        }), 400
+
+    model = body.get("model", ENGINE_DEFAULTS[engine])
 
     general_system_prompt = """
 You are an assistant that knows about Manim. Manim is a mathematical animation engine that is used to create videos programmatically.
@@ -37,7 +65,7 @@ def construct(self):
 4. Do not explain the code, only the code.
     """
 
-    if model.startswith("claude-"):
+    if engine == "anthropic" or model.startswith("claude-"):
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         messages = [{"role": "user", "content": prompt_content}]
         try:
@@ -57,41 +85,21 @@ def construct(self):
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
-    elif model.startswith("gemini-"):
-        if genai is None:
-            return jsonify({"error": "google-genai pkg not installed"}), 500
-        client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+    elif engine == "gemini" or model.startswith("gemini-"):
         try:
-            # We map standard gemini aliases
-            if model == "gemini-2.5-flash":
-                use_model = "gemini-2.5-flash"
-            elif model == "gemini-2.5-flash":
-                use_model = "gemini-2.5-flash"
-            else:
-                use_model = model
-
-            response = client.models.generate_content(
-                model=use_model,
-                contents=f"{general_system_prompt}\n\nUser request: {prompt_content}",
-            )
-            # Remove any markdown code block artifacts if present
-            code = response.text
-            if code.startswith("```"):
-                code = "\n".join(code.split("\n")[1:])
-            if code.endswith("```"):
-                code = "\n".join(code.split("\n")[:-1])
-            return jsonify({"code": code.strip()})
+            code = generate_gemini_content(model, general_system_prompt, prompt_content)
+            return jsonify({"code": code})
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
     else:
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         messages = [
             {"role": "system", "content": general_system_prompt},
             {"role": "user", "content": prompt_content},
         ]
 
         try:
+            client = get_openai_compatible_client(engine)
             response = client.chat.completions.create(
                 model=model,
                 messages=messages,

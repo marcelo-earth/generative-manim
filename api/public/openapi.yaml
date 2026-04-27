@@ -14,7 +14,7 @@ paths:
   /generate-code:
     post:
       summary: Generate Manim Code
-      description: Generates Manim code based on a provided prompt using either OpenAI or Anthropic models.
+      description: Generates Manim code based on a provided prompt using OpenAI, Anthropic, Featherless, or Gemini models.
       requestBody:
         required: true
         content:
@@ -28,8 +28,12 @@ paths:
                   example: Create a blue circle and animate its creation.
                 model:
                   type: string
-                  description: The model to use for code generation (e.g., 'gpt-4o' for OpenAI or 'claude-3-haiku-20240307' for Anthropic).
+                  description: The model to use for code generation (for example, 'gpt-4o', 'claude-3-5-sonnet-20241022', 'gemini-2.5-flash', or 'gemini-3-flash-preview').
                   example: gpt-4o
+                engine:
+                  type: string
+                  enum: [openai, anthropic, featherless, gemini]
+                  default: openai
       responses:
         '200':
           description: Successful response with generated code

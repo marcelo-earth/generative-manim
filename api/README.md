@@ -28,6 +28,7 @@ And, depending on the model you want to use, you will need to have an API key fo
 
 - [OpenAI](https://openai.com/api/)
 - [Anthropic](https://www.anthropic.com/api)
+- [Google Gemini](https://ai.google.dev/gemini-api)
 
 If you are on MacOS, make sure you have `pkg-config` and `cairo` installed. You can install them using Homebrew:
 
@@ -52,6 +53,8 @@ pip install -r requirements.txt
 ```
 
 Now you have the option of running the API locally or using Docker.
+
+For production or cloud hosting, see the [Cloud Deployment Guide](../docs/cloud-deployment.md).
 
 ### Running the API locally
 
@@ -93,7 +96,9 @@ Let's say you want to create a simple animation that shows a square transforming
 curl -X POST http://127.0.0.1:8080/v1/code/generation \
 -H "Content-Type: application/json" \
 -d '{
-  "prompt": "Create a Manim animation that shows a square transforming into a circle"
+  "prompt": "Create a Manim animation that shows a square transforming into a circle",
+  "engine": "gemini",
+  "model": "gemini-2.5-flash"
 }'
 ```
 
@@ -117,6 +122,8 @@ curl -N -X POST http://127.0.0.1:8080/v1/chat/generation \
 
 When executed, the API will return the stream of the latest assistant message.
 
+The chat generation endpoint includes a compact Manim reference index in its system prompt. See the [Manim Prompt Context guide](../docs/manim-prompt-context.md) for where that context lives and how it is used.
+
 ### 🎥 How to render a Manim video?
 
 Let's say you want to render a circle scaling animation. You can use the `/v1/video/rendering` endpoint with a POST request. Like this:
@@ -128,6 +135,13 @@ curl -X POST http://127.0.0.1:8080/v1/video/rendering \
   "code": "from manim import *\n\nclass DrawCircle(Scene):\n    def construct(self):\n        # Create a circle object\n        circle = Circle()\n\n        # Use the animate API to smoothly scale the circle down to a radius of 0.1\n        self.play(Create(circle))\n",
   "file_name": "scene_56861",
   "file_class": "DrawCircle",
+  "aspect_ratio": "9:16",
   "stream": true
 }'
 ```
+
+The `aspect_ratio` field controls the render dimensions. Supported values are:
+
+- `16:9` for landscape videos
+- `9:16` for portrait videos
+- `1:1` for square videos
