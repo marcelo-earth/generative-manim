@@ -13,12 +13,6 @@
       "provider": "featherless"
     },
     {
-      "model": "deepseek-coder-v2-lite-instruct-featherless",
-      "model_id": "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct",
-      "run_name": "featherless",
-      "provider": "featherless"
-    },
-    {
       "model": "codellama-7b-instruct-featherless",
       "model_id": "codellama/CodeLlama-7b-Instruct-hf",
       "run_name": "featherless",
