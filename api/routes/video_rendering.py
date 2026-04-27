@@ -360,21 +360,27 @@ def export_video():
         local_filename = download_video(video_url)
         local_filenames.append(local_filename)
 
-    # Create a list of input file arguments for ffmpeg
-    input_files = " ".join([f"-i {filename}" for filename in local_filenames])
-
     # Generate a unique filename with UNIX timestamp
     timestamp = int(time.time())
+    # Sanitize title_slug to prevent command injection
+    safe_slug = re.sub(r'[^a-zA-Z0-9_-]', '', title_slug or 'untitled')
     merged_filename = os.path.join(
-        os.getcwd(), f"exported-scene-{title_slug}-{timestamp}.mp4"
+        os.getcwd(), f"exported-scene-{safe_slug}-{timestamp}.mp4"
     )
 
-    # Command to merge videos using ffmpeg
-    command = f"ffmpeg {input_files} -filter_complex 'concat=n={len(local_filenames)}:v=1:a=0[out]' -map '[out]' {merged_filename}"
+    # Build ffmpeg command as a list to avoid shell injection
+    command_list = ["ffmpeg"]
+    for filename in local_filenames:
+        command_list.extend(["-i", filename])
+    command_list.extend([
+        "-filter_complex", f"concat=n={len(local_filenames)}:v=1:a=0[out]",
+        "-map", "[out]",
+        merged_filename
+    ])
 
     try:
-        # Execute the ffmpeg command
-        subprocess.run(command, shell=True, check=True)
+        # Execute the ffmpeg command safely (no shell=True)
+        subprocess.run(command_list, check=True)
         print("Videos merged successfully.")
         print(f"merged_filename: {merged_filename}")
         public_url = upload_to_azure_storage(
