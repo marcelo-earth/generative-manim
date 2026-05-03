@@ -59,6 +59,7 @@ It began as a prototype of a web app that uses [GPT-4](https://openai.com/resear
 
 | Name                          | Description                                                               | Engine                     | Phase |
 | ----------------------------- | ------------------------------------------------------------------------- | -------------------------- | ----- |
+| GM GPT-5.5                    | OpenAI's newest frontier model for complex professional and coding work    | gpt-5.5                    | ✅    |
 | GM GPT-4o                     | Latest GPT model from OpenAI powered by a custom System Prompt            | GPT-4o                     | ✅    |
 | GM GPT-3.5 Fine Tuned         | First Fine-tuned model of GPT-3.5                                         | GPT-3.5                    | ✅    |
 | GM GPT-3.5 Physics Fine Tuned | Fine-tuned GPT-3.5 model trained to generate Physics animations           | GPT-3.5                    | ✅    |
