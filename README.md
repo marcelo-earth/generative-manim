@@ -144,6 +144,16 @@ See [`docs/featherless.md`](./docs/featherless.md) for API usage, smoke tests, a
 
 **Generative Manim** is currently sponsored by **The Astronomical Software Company**.
 
+## 🙌 Contributors
+
+Thank you to everyone who has contributed to Generative Manim!
+
+| Contributor | Contribution |
+| ----------- | ------------ |
+| [@abdullahsohaill](https://github.com/abdullahsohaill) | Add Gemini 2.5 Flash and Gemini 3 Flash support via google-genai |
+| [@tranquac](https://github.com/tranquac) | Fix command injection vulnerability in ffmpeg video export |
+| [@Wing900](https://github.com/Wing900) | Add Chinese README translation |
+
 ## 🤲 Contributing
 
 Generative Manim is an open source project.
