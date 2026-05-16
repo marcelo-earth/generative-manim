@@ -169,3 +169,7 @@ datasets/promit/API_Key.cfg
 .cursorrules
 api/routes/public/*
 .qodo
+
+# macOS metadata
+.DS_Store
+**/.DS_Store
