@@ -12,7 +12,7 @@ This directory contains the long-form guides that complement the project [README
 
 ## Related Documentation
 
-- [Root README](../README.md) — project overview, model list, and benchmark entry points.
-- [API README](../api/README.md) — local setup, endpoints, and usage examples for the Animation Processing Interface.
-- [Training README](../training/README.md) — SFT, DPO, and GRPO training pipeline for open-source Manim models.
-- [Benchmarks README](../training/benchmarks/README.md) — benchmark design and workflow for evaluating models on Manim code generation.
+- [Root README](../README.md): project overview, model list, and benchmark entry points.
+- [API README](../api/README.md): local setup, endpoints, and usage examples for the Animation Processing Interface.
+- [Training README](../training/README.md): SFT, DPO, and GRPO training pipeline for open-source Manim models.
+- [Benchmarks README](../training/benchmarks/README.md): benchmark design and workflow for evaluating models on Manim code generation.
