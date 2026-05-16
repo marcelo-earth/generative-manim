@@ -179,3 +179,6 @@ combined_docs.md
 
 # Dataset exports dropped at repo root; commit them under datasets/ instead
 /dataset-*.jsonl
+
+# Ad-hoc stack notes (kept out of the repo, info lives in README/docs)
+/stack-description.txt
