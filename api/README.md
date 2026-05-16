@@ -29,6 +29,7 @@ And, depending on the model you want to use, you will need to have an API key fo
 - [OpenAI](https://openai.com/api/)
 - [Anthropic](https://www.anthropic.com/api)
 - [Google Gemini](https://ai.google.dev/gemini-api)
+- [Featherless](https://featherless.ai) for OpenAI-compatible access to hosted open-weight models. See the [Featherless guide](../docs/featherless.md) for setup details.
 
 If you are on MacOS, make sure you have `pkg-config` and `cairo` installed. You can install them using Homebrew:
 
