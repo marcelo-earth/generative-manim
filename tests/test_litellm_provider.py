@@ -207,8 +207,49 @@ class TestCodeGenerationLiteLLMErrors:
         assert resp.status_code == 500
 
 
+class TestCodeGenerationLiteLLMEdgeCases:
+    """Edge case tests for empty/null responses, streaming, etc."""
+
+    def test_empty_response_content(self, client):
+        _fake_litellm.completion.return_value = _make_response("")
+        resp = client.post("/v1/code/generation", json={
+            "prompt": "test",
+            "engine": "litellm",
+        })
+        assert resp.status_code == 200
+        assert resp.get_json()["code"] == ""
+
+    def test_null_response_content(self, client):
+        _fake_litellm.completion.return_value = _make_response(None)
+        resp = client.post("/v1/code/generation", json={
+            "prompt": "test",
+            "engine": "litellm",
+        })
+        assert resp.status_code == 200
+
+    def test_no_choices_raises_500(self, client):
+        bad_resp = mock.MagicMock()
+        bad_resp.choices = []
+        _fake_litellm.completion.return_value = bad_resp
+        resp = client.post("/v1/code/generation", json={
+            "prompt": "test",
+            "engine": "litellm",
+        })
+        assert resp.status_code == 500
+
+    def test_context_length_exceeded(self, client):
+        """Token limit / context window overflow returns 500."""
+        _fake_litellm.completion.side_effect = RuntimeError("context_length_exceeded")
+        resp = client.post("/v1/code/generation", json={
+            "prompt": "test",
+            "engine": "litellm",
+        })
+        assert resp.status_code == 500
+        assert "context_length" in resp.get_json()["error"]
+
+
 class TestChatGenerationLiteLLMEngine:
-    """Tests that litellm is accepted as a valid engine in chat generation."""
+    """Tests for litellm streaming in chat generation."""
 
     def test_litellm_engine_accepted(self, client):
         _fake_litellm.completion.return_value = _make_streaming_response("Hello!")
@@ -225,3 +266,82 @@ class TestChatGenerationLiteLLMEngine:
             "engine": "nonexistent_engine",
         })
         assert resp.status_code == 400
+
+    def test_streaming_response_content(self, client):
+        _fake_litellm.completion.return_value = _make_streaming_response("Hello world")
+        resp = client.post("/v1/chat/generation", json={
+            "prompt": "test",
+            "engine": "litellm",
+            "model": "openai/gpt-4o",
+        })
+        assert resp.status_code == 200
+        assert "Hello world" in resp.get_data(as_text=True)
+
+    def test_streaming_partial_chunks(self, client):
+        """Verify None content chunks are skipped gracefully."""
+        chunks = []
+        for text in ["Hello", None, " world", None]:
+            chunk = mock.MagicMock()
+            chunk.choices = [mock.MagicMock()]
+            chunk.choices[0].delta = mock.MagicMock()
+            chunk.choices[0].delta.content = text
+            chunks.append(chunk)
+        _fake_litellm.completion.return_value = iter(chunks)
+
+        resp = client.post("/v1/chat/generation", json={
+            "prompt": "test",
+            "engine": "litellm",
+            "model": "openai/gpt-4o",
+        })
+        assert resp.status_code == 200
+        body = resp.get_data(as_text=True)
+        assert "Hello" in body
+        assert "world" in body
+
+    def test_streaming_empty_response(self, client):
+        """Empty stream returns 200 with no content."""
+        final = mock.MagicMock()
+        final.choices = [mock.MagicMock()]
+        final.choices[0].delta = mock.MagicMock()
+        final.choices[0].delta.content = None
+        _fake_litellm.completion.return_value = iter([final])
+
+        resp = client.post("/v1/chat/generation", json={
+            "prompt": "test",
+            "engine": "litellm",
+            "model": "openai/gpt-4o",
+        })
+        assert resp.status_code == 200
+
+    def test_streaming_error_handled(self, client):
+        """Error during streaming returns error message."""
+        _fake_litellm.completion.side_effect = RuntimeError("connection lost")
+        resp = client.post("/v1/chat/generation", json={
+            "prompt": "test",
+            "engine": "litellm",
+            "model": "openai/gpt-4o",
+        })
+        assert resp.status_code == 200
+        assert "Error" in resp.get_data(as_text=True)
+
+    def test_streaming_drop_params(self, client):
+        _fake_litellm.completion.return_value = _make_streaming_response("ok")
+        client.post("/v1/chat/generation", json={
+            "prompt": "test",
+            "engine": "litellm",
+            "model": "openai/gpt-4o",
+        })
+        call_kwargs = _fake_litellm.completion.call_args[1]
+        assert call_kwargs["drop_params"] is True
+
+    def test_platform_mode_json_format(self, client):
+        _fake_litellm.completion.return_value = _make_streaming_response("Hi")
+        resp = client.post("/v1/chat/generation", json={
+            "prompt": "test",
+            "engine": "litellm",
+            "model": "openai/gpt-4o",
+            "isForPlatform": True,
+        })
+        assert resp.status_code == 200
+        body = resp.get_data(as_text=True)
+        assert '"type": "text"' in body
