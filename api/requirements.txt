@@ -21,3 +21,4 @@ azure-monitor-opentelemetry==1.4.2
 manim-physics==0.4.0
 httpx==0.27.2
 google-genai>=0.5.0
+litellm>=1.80.0,<1.87
