@@ -38,6 +38,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
 
+  /v1/models:
+    get:
+      summary: List available models
+      description: Returns all supported engines with their available model IDs, defaults, and whether the corresponding API key is configured.
+      operationId: listModels
+      responses:
+        "200":
+          description: List of engines and their models
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelsResponse"
+
   /v1/code/generation:
     post:
       summary: Generate Manim code
@@ -250,6 +263,38 @@ components:
         code:
           type: string
           description: Generated Manim Python code.
+
+    ModelsResponse:
+      type: object
+      required: [engines]
+      properties:
+        engines:
+          type: array
+          items:
+            type: object
+            required: [engine, configured, default, models]
+            properties:
+              engine:
+                type: string
+                enum: [openai, anthropic, gemini, featherless, litellm]
+              configured:
+                type: boolean
+                description: True if the corresponding API key environment variable is set.
+              default:
+                type: string
+                description: Default model ID used when no model is specified.
+              models:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    description:
+                      type: string
+              note:
+                type: string
+                description: Optional extra context (e.g. for LiteLLM's open model string format).
 
     ChatGenerationRequest:
       type: object
