@@ -145,7 +145,7 @@ class TestCodeGenerationAnthropic:
         data = resp.get_json()
         assert data["code"] == "from manim import *"
 
-    def test_uses_default_claude_model(self, client, monkeypatch):
+    def test_uses_default_claude_sonnet_4_6(self, client, monkeypatch):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
         captured = {}
         with mock.patch("anthropic.Anthropic") as mock_anthropic:
@@ -154,7 +154,23 @@ class TestCodeGenerationAnthropic:
                 return _make_anthropic_response("code")
             mock_anthropic.return_value.messages.create.side_effect = capture
             client.post("/v1/code/generation", json={"prompt": "test", "engine": "anthropic"})
-        assert "claude" in captured.get("model", "")
+        assert captured.get("model") == "claude-sonnet-4-6"
+
+    def test_claude_opus_4_7_accepted(self, client, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        captured = {}
+        with mock.patch("anthropic.Anthropic") as mock_anthropic:
+            def capture(**kwargs):
+                captured.update(kwargs)
+                return _make_anthropic_response("code")
+            mock_anthropic.return_value.messages.create.side_effect = capture
+            resp = client.post("/v1/code/generation", json={
+                "prompt": "test",
+                "engine": "anthropic",
+                "model": "claude-opus-4-7",
+            })
+        assert resp.status_code == 200
+        assert captured.get("model") == "claude-opus-4-7"
 
     def test_multiple_content_blocks_joined(self, client, monkeypatch):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
