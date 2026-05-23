@@ -10,6 +10,7 @@ import random
 import re
 import base64
 from api.prompts.manimDocs import manimDocs
+from api.validation import get_json_body
 from azure.storage.blob import BlobServiceClient
 from PIL import Image
 import io
@@ -119,7 +120,9 @@ def generate_code_chat():
     """
     print("Received request for /v1/chat/generation")
 
-    data = request.json
+    data, err = get_json_body()
+    if err:
+        return err
     print(f"Request data: {json.dumps(data, indent=2)}")
 
     messages = data.get("messages", [])
