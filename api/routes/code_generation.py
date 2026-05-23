@@ -79,6 +79,7 @@ def construct(self):
                 "model": model,
                 "messages": messages,
                 "temperature": 0.2,
+                "max_tokens": 4096,
                 "drop_params": True,
             }
             api_key = os.getenv("LITELLM_API_KEY")

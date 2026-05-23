@@ -333,9 +333,6 @@ That message should appear after the code, as the last message of the conversati
     if engine == "litellm":
         import litellm
 
-        litellm_system_prompt = general_system_prompt
-        messages[0] = {"role": "system", "content": litellm_system_prompt}
-
         def generate():
             try:
                 kwargs = {
