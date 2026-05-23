@@ -139,6 +139,7 @@ def generate_code_chat():
         "anthropic": "claude-35-sonnet",
         "deepseek": "r1",
         "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
+        "litellm": "openai/gpt-4o",
     }
 
     # Validate and set the model based on engine
@@ -155,6 +156,7 @@ def generate_code_chat():
         "anthropic": ["claude-35-sonnet"],
         "deepseek": ["r1"],
         "featherless": None,
+        "litellm": None,
     }
 
     if VALID_MODELS[engine] is not None and model not in VALID_MODELS[engine]:
@@ -328,7 +330,55 @@ That message should appear after the code, as the last message of the conversati
 
     messages.insert(0, {"role": "system", "content": general_system_prompt})
 
-    if engine == "featherless":
+    if engine == "litellm":
+        import litellm
+
+        litellm_system_prompt = general_system_prompt
+        messages[0] = {"role": "system", "content": litellm_system_prompt}
+
+        def generate():
+            try:
+                kwargs = {
+                    "model": model,
+                    "messages": messages,
+                    "temperature": data.get("temperature", 0.2),
+                    "max_tokens": data.get("maxTokens", 2048),
+                    "stream": True,
+                    "drop_params": True,
+                }
+                api_key = os.getenv("LITELLM_API_KEY")
+                if api_key:
+                    kwargs["api_key"] = api_key
+
+                stream = litellm.completion(**kwargs)
+                for chunk in stream:
+                    if not chunk.choices or not chunk.choices[0].delta:
+                        continue
+                    content = chunk.choices[0].delta.content
+                    if not content:
+                        continue
+                    if is_for_platform:
+                        text_obj = json.dumps({"type": "text", "text": content})
+                        yield f"{text_obj}\n"
+                    else:
+                        yield content
+            except Exception as e:
+                error_message = str(e)
+                if is_for_platform:
+                    yield f"{json.dumps({'type': 'error', 'text': error_message})}\n"
+                else:
+                    yield f"Error: {error_message}"
+
+        response = Response(
+            stream_with_context(generate()),
+            content_type="text/plain; charset=utf-8",
+        )
+        if is_for_platform:
+            response.headers['Transfer-Encoding'] = 'chunked'
+            response.headers['x-vercel-ai-data-stream'] = 'v1'
+        return response
+
+    elif engine == "featherless":
         api_key = os.environ.get("FEATHERLESS_API_KEY")
         if not api_key:
             return jsonify({"error": "FEATHERLESS_API_KEY is required when engine='featherless'"}), 500

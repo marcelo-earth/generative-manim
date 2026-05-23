@@ -12,6 +12,7 @@ ENGINE_DEFAULTS = {
     "anthropic": "claude-3-5-sonnet-20241022",
     "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
     "gemini": "gemini-2.5-flash",
+    "litellm": "openai/gpt-4o",
 }
 
 FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
@@ -65,7 +66,41 @@ def construct(self):
 4. Do not explain the code, only the code.
     """
 
-    if engine == "anthropic" or model.startswith("claude-"):
+    if engine == "litellm":
+        import litellm
+        from litellm.exceptions import AuthenticationError, NotFoundError, RateLimitError, Timeout
+
+        messages = [
+            {"role": "system", "content": general_system_prompt},
+            {"role": "user", "content": prompt_content},
+        ]
+        try:
+            kwargs = {
+                "model": model,
+                "messages": messages,
+                "temperature": 0.2,
+                "drop_params": True,
+            }
+            api_key = os.getenv("LITELLM_API_KEY")
+            if api_key:
+                kwargs["api_key"] = api_key
+
+            response = litellm.completion(**kwargs)
+            code = response.choices[0].message.content
+            return jsonify({"code": code})
+
+        except AuthenticationError as e:
+            return jsonify({"error": f"LiteLLM auth failed (check API key): {e}"}), 401
+        except NotFoundError as e:
+            return jsonify({"error": f"LiteLLM model not found (use provider/model format, e.g. openai/gpt-4o): {e}"}), 404
+        except RateLimitError as e:
+            return jsonify({"error": f"LiteLLM rate limit exceeded: {e}"}), 429
+        except Timeout as e:
+            return jsonify({"error": f"LiteLLM request timed out: {e}"}), 504
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    elif engine == "anthropic" or model.startswith("claude-"):
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         messages = [{"role": "user", "content": prompt_content}]
         try:
