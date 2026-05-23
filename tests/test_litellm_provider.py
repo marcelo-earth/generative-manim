@@ -238,14 +238,16 @@ class TestCodeGenerationLiteLLMEdgeCases:
         assert resp.status_code == 500
 
     def test_context_length_exceeded(self, client):
-        """Token limit / context window overflow returns 500."""
+        """Token limit / context window overflow returns 500 with sanitized error."""
         _fake_litellm.completion.side_effect = RuntimeError("context_length_exceeded")
         resp = client.post("/v1/code/generation", json={
             "prompt": "test",
             "engine": "litellm",
         })
         assert resp.status_code == 500
-        assert "context_length" in resp.get_json()["error"]
+        data = resp.get_json()
+        assert "error" in data
+        assert data.get("code") == "litellm_error"
 
 
 class TestChatGenerationLiteLLMEngine:
