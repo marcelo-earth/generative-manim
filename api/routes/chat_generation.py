@@ -458,14 +458,7 @@ That message should appear after the code, as the last message of the conversati
                 else:
                     yield f"Error: {error_message}"
 
-        response = Response(
-            stream_with_context(generate()),
-            content_type="text/plain; charset=utf-8",
-        )
-        if is_for_platform:
-            response.headers['Transfer-Encoding'] = 'chunked'
-            response.headers['x-vercel-ai-data-stream'] = 'v1'
-        return response
+        return _streaming_response(generate, is_for_platform)
 
     elif engine == "featherless":
         api_key = os.environ.get("FEATHERLESS_API_KEY")
@@ -509,14 +502,7 @@ Rules:
                 else:
                     yield f"Error: {safe_message}"
 
-        response = Response(
-            stream_with_context(generate()),
-            content_type="text/plain; charset=utf-8",
-        )
-        if is_for_platform:
-            response.headers['Transfer-Encoding'] = 'chunked'
-            response.headers['x-vercel-ai-data-stream'] = 'v1'
-        return response
+        return _streaming_response(generate, is_for_platform)
 
     if engine == "gemini":
         gemini_system_prompt = general_system_prompt
@@ -536,123 +522,12 @@ Rules:
                 else:
                     yield f"Error: {safe_message}"
 
-        response = Response(
-            stream_with_context(generate()),
-            content_type="text/plain; charset=utf-8",
-        )
-        if is_for_platform:
-            response.headers["Transfer-Encoding"] = "chunked"
-            response.headers["x-vercel-ai-data-stream"] = "v1"
-        return response
+        return _streaming_response(generate, is_for_platform)
 
     if engine == "anthropic":
         client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-        def get_preview(code: str, class_name: str):
-            """
-            get_preview is a function that generates PNGs frames from a Manim script animation.
-            
-            IMPORTANT: This version of the function will only work for OpenAI models.
-            """
-            
-            print("Generating preview")
-
-            # Get the absolute path of the current script (in api/routes)
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            api_dir = os.path.dirname(current_dir)  # This should be the /api directory
-            
-            # Create the temporary directory inside /api
-            temp_dir = os.path.join(api_dir, "temp_manim")
-            os.makedirs(temp_dir, exist_ok=True)
-            
-            # Create the Python file in the temporary location
-            file_name = f"{class_name}.py"
-            file_path = os.path.join(temp_dir, file_name)
-            
-            preview_code = f"""
-from manim import *
-from math import *
-
-{code}
-            """
-            
-            with open(file_path, "w") as f:
-                f.write(preview_code)
-            
-            # Run the Manim command
-            command = f"manim {file_path} {class_name} --format=png --media_dir {temp_dir} --custom_folders -pql --disable_caching"
-            try:
-                result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
-                
-                print(f"Result: {result}")
-                
-                # Create the previews directory if it doesn't exist
-                previews_dir = os.path.join(api_dir, "public", "previews")
-                os.makedirs(previews_dir, exist_ok=True)
-
-                # Generate a random string for the subfolder
-                random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-                
-                # Move the generated PNGs to the previews directory
-                source_dir = temp_dir
-                destination_dir = os.path.join(previews_dir, random_string, class_name)
-                
-                # Find all PNG files in the source directory
-                png_files = [f for f in os.listdir(source_dir) if f.endswith('.png')]
-                
-                if png_files:
-                    os.makedirs(destination_dir, exist_ok=True)
-                    image_list = []
-                    for png_file in png_files:
-                        shutil.move(os.path.join(source_dir, png_file), os.path.join(destination_dir, png_file))
-                        # Extract the index from the filename
-                        match = re.search(r'(\d+)\.png$', png_file)
-                        if match:
-                            index = int(match.group(1))
-                            if index % 4 == 0:  # Only include frames where index is divisible by 5
-                                image_path = os.path.join(destination_dir, png_file)
-                                with Image.open(image_path) as img:
-                                    # Calculate new dimensions (half the original size)
-                                    width, height = img.size
-                                    new_width = width // 4
-                                    new_height = height // 4
-                                    # Resize the image
-                                    resized_img = img.resize((new_width, new_height), Image.LANCZOS)
-                                    # Save the resized image to a bytes buffer
-                                    buffer = io.BytesIO()
-                                    resized_img.save(buffer, format="PNG")
-                                    # Get the base64 encoding of the resized image
-                                    base64_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
-                                image_list.append({
-                                    "path": image_path,
-                                    "index": index,
-                                    "base64": base64_image
-                                })
-                    image_list.sort(key=lambda x: x["index"])
-                    return json.dumps({
-                        "message": f"Animation preview generated. Now you will see the image frames in the next automatic message...",
-                        "images": image_list
-                    })
-                else:
-                    print(f"No PNG files found in: {source_dir}")
-                    return json.dumps({
-                        "error": f"No preview files generated at expected location: {source_dir}",
-                        "images": []
-                    })
-            except subprocess.CalledProcessError as e:
-                error_output = e.stdout + e.stderr
-                print(f"Error running Manim command: {str(e)}")
-                print(f"Command output:\n{error_output}")
-                return json.dumps({
-                    "error": f"ERROR. Error generating preview, please think on what could be the problem, and use `get_preview` to run the code again: {str(e)}\nCommand output:\n{error_output}",
-                    "images": []
-                })
-            except Exception as e:
-                print(f"Unexpected error: {str(e)}")
-                return json.dumps({
-                    "error": f"Unexpected error: {str(e)}",
-                    "images": []
-                })
+        get_preview = _generate_manim_preview
 
         def convert_message_for_anthropic(message):
             if isinstance(message["content"], list):
@@ -866,120 +741,12 @@ from math import *
                 error_message = f'0:"{str(e)}"\n' if is_for_platform else f"Error: {str(e)}"
                 yield error_message
 
-        response = Response(stream_with_context(generate()), content_type="text/plain; charset=utf-8" if is_for_platform else "text/event-stream")
-        if is_for_platform:
-            response.headers['Transfer-Encoding'] = 'chunked'
-            response.headers['x-vercel-ai-data-stream'] = 'v1'
-        return response
+        return _streaming_response(generate, is_for_platform)
 
     else:
         client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-                
-        def get_preview(code: str, class_name: str):
-            """
-            get_preview is a function that generates PNGs frames from a Manim script animation.
-            
-            IMPORTANT: This version of the function will only work for OpenAI models.
-            """
-            
-            print("Generating preview")
 
-            # Get the absolute path of the current script (in api/routes)
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            api_dir = os.path.dirname(current_dir)  # This should be the /api directory
-            
-            # Create the temporary directory inside /api
-            temp_dir = os.path.join(api_dir, "temp_manim")
-            os.makedirs(temp_dir, exist_ok=True)
-            
-            # Create the Python file in the temporary location
-            file_name = f"{class_name}.py"
-            file_path = os.path.join(temp_dir, file_name)
-            
-            preview_code = f"""
-from manim import *
-from math import *
-
-{code}
-            """
-            
-            with open(file_path, "w") as f:
-                f.write(preview_code)
-            
-            # Run the Manim command
-            command = f"manim {file_path} {class_name} --format=png --media_dir {temp_dir} --custom_folders -pql --disable_caching"
-            try:
-                result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
-                
-                print(f"Result: {result}")
-                
-                # Create the previews directory if it doesn't exist
-                previews_dir = os.path.join(api_dir, "public", "previews")
-                os.makedirs(previews_dir, exist_ok=True)
-
-                # Generate a random string for the subfolder
-                random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-                
-                # Move the generated PNGs to the previews directory
-                source_dir = temp_dir
-                destination_dir = os.path.join(previews_dir, random_string, class_name)
-                
-                # Find all PNG files in the source directory
-                png_files = [f for f in os.listdir(source_dir) if f.endswith('.png')]
-                
-                if png_files:
-                    os.makedirs(destination_dir, exist_ok=True)
-                    image_list = []
-                    for png_file in png_files:
-                        shutil.move(os.path.join(source_dir, png_file), os.path.join(destination_dir, png_file))
-                        # Extract the index from the filename
-                        match = re.search(r'(\d+)\.png$', png_file)
-                        if match:
-                            index = int(match.group(1))
-                            if index % 4 == 0:  # Only include frames where index is divisible by 5
-                                image_path = os.path.join(destination_dir, png_file)
-                                with Image.open(image_path) as img:
-                                    # Calculate new dimensions (half the original size)
-                                    width, height = img.size
-                                    new_width = width // 4
-                                    new_height = height // 4
-                                    # Resize the image
-                                    resized_img = img.resize((new_width, new_height), Image.LANCZOS)
-                                    # Save the resized image to a bytes buffer
-                                    buffer = io.BytesIO()
-                                    resized_img.save(buffer, format="PNG")
-                                    # Get the base64 encoding of the resized image
-                                    base64_image = base64.b64encode(buffer.getvalue()).decode('utf-8')
-                                image_list.append({
-                                    "path": image_path,
-                                    "index": index,
-                                    "base64": base64_image
-                                })
-                    image_list.sort(key=lambda x: x["index"])
-                    return json.dumps({
-                        "message": f"Animation preview generated. Now you will see the image frames in the next automatic message...",
-                        "images": image_list
-                    })
-                else:
-                    print(f"No PNG files found in: {source_dir}")
-                    return json.dumps({
-                        "error": f"No preview files generated at expected location: {source_dir}",
-                        "images": []
-                    })
-            except subprocess.CalledProcessError as e:
-                error_output = e.stdout + e.stderr
-                print(f"Error running Manim command: {str(e)}")
-                print(f"Command output:\n{error_output}")
-                return json.dumps({
-                    "error": f"ERROR. Error generating preview, please think on what could be the problem, and use `get_preview` to run the code again: {str(e)}\nCommand output:\n{error_output}",
-                    "images": []
-                })
-            except Exception as e:
-                print(f"Unexpected error: {str(e)}")
-                return json.dumps({
-                    "error": f"Unexpected error: {str(e)}",
-                    "images": []
-                })
+        get_preview = _generate_manim_preview
 
         def generate():
             max_retries = 3
@@ -1148,8 +915,4 @@ from math import *
                 yield final_message
 
         print("Generating response")
-        response = Response(stream_with_context(generate()), content_type="text/plain; charset=utf-8")
-        if is_for_platform:
-            response.headers['Transfer-Encoding'] = 'chunked'
-            response.headers['x-vercel-ai-data-stream'] = 'v1'
-        return response
+        return _streaming_response(generate, is_for_platform)
