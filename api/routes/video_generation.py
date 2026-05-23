@@ -7,6 +7,7 @@ import uuid
 from openai import OpenAI
 from api.llm_providers import generate_gemini_content
 from api.validation import get_json_body, require_string, validate_aspect_ratio
+from api.errors import internal_error, gateway_timeout
 
 video_generation_bp = Blueprint('video_generation', __name__)
 
@@ -125,8 +126,8 @@ def generate_video():
         try:
             code = generate_manim_code(prompt, engine, model)
             print(f"Code generation successful")
-        except Exception as e:
-            return jsonify({"error": f"Code generation failed: {str(e)}"}), 500
+        except Exception:
+            return internal_error("Code generation failed", code="code_generation_failed")
 
         # Step 2: Render the video
         print(f"Step 2: Rendering video")
@@ -172,8 +173,7 @@ config.frame_width = {frame_width}
             )
 
             if result.returncode != 0:
-                error_msg = result.stderr or result.stdout
-                return jsonify({"error": f"Manim rendering failed: {error_msg}"}), 500
+                return internal_error("Manim rendering failed", code="render_failed")
 
             # Find the generated video file
             video_file_path = os.path.join(
@@ -182,7 +182,7 @@ config.frame_width = {frame_width}
             )
 
             if not os.path.exists(video_file_path):
-                return jsonify({"error": "Video file not found after rendering"}), 500
+                return internal_error("Video file not found after rendering", code="video_not_found")
 
             # Move video to public folder
             video_storage_file_name = f"video-{user_id}-{project_name}-{iteration}"
@@ -205,9 +205,9 @@ config.frame_width = {frame_width}
             }), 200
 
         except subprocess.TimeoutExpired:
-            return jsonify({"error": "Video rendering timed out"}), 500
-        except Exception as e:
-            return jsonify({"error": f"Video rendering failed: {str(e)}"}), 500
+            return gateway_timeout("Video rendering timed out", code="render_timeout")
+        except Exception:
+            return internal_error("Video rendering failed", code="render_error")
         finally:
             # Cleanup temporary files
             try:
@@ -215,9 +215,8 @@ config.frame_width = {frame_width}
                     os.remove(file_path)
                 if os.path.exists(video_file_path):
                     os.remove(video_file_path)
-            except:
+            except Exception:
                 pass
 
-    except Exception as e:
-        print(f"Unexpected error: {str(e)}")
-        return jsonify({"error": f"Unexpected error: {str(e)}"}), 500
+    except Exception:
+        return internal_error(code="unexpected_error")

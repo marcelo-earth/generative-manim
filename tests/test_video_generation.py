@@ -146,7 +146,7 @@ class TestVideoGenerationOpenAI:
                     "engine": "openai",
                 })
 
-        assert resp.status_code == 500
+        assert resp.status_code == 504
         assert "timed out" in resp.get_json()["error"].lower()
 
 

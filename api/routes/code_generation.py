@@ -4,6 +4,7 @@ import os
 from openai import OpenAI
 from api.llm_providers import generate_gemini_content
 from api.validation import get_json_body
+from api.errors import bad_request, unauthorized, not_found, rate_limited, gateway_timeout, internal_error
 
 code_generation_bp = Blueprint('code_generation', __name__)
 
@@ -42,13 +43,14 @@ def generate_code():
     engine = body.get("engine", "openai")
 
     if not isinstance(engine, str) or engine not in ENGINE_DEFAULTS:
-        return jsonify({
-            "error": f"Invalid engine. Must be one of: {', '.join(ENGINE_DEFAULTS.keys())}"
-        }), 400
+        return bad_request(
+            f"Invalid engine. Must be one of: {', '.join(ENGINE_DEFAULTS.keys())}",
+            code="invalid_engine",
+        )
 
     model = body.get("model", ENGINE_DEFAULTS[engine])
     if model is not None and not isinstance(model, str):
-        return jsonify({"error": "'model' must be a string"}), 400
+        return bad_request("'model' must be a string", code="invalid_model")
 
     general_system_prompt = """
 You are an assistant that knows about Manim. Manim is a mathematical animation engine that is used to create videos programmatically.
@@ -95,16 +97,19 @@ def construct(self):
             code = response.choices[0].message.content
             return jsonify({"code": code})
 
-        except AuthenticationError as e:
-            return jsonify({"error": f"LiteLLM auth failed (check API key): {e}"}), 401
-        except NotFoundError as e:
-            return jsonify({"error": f"LiteLLM model not found (use provider/model format, e.g. openai/gpt-4o): {e}"}), 404
-        except RateLimitError as e:
-            return jsonify({"error": f"LiteLLM rate limit exceeded: {e}"}), 429
-        except Timeout as e:
-            return jsonify({"error": f"LiteLLM request timed out: {e}"}), 504
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
+        except AuthenticationError:
+            return unauthorized("Authentication failed — check LITELLM_API_KEY", code="auth_failed")
+        except NotFoundError:
+            return not_found(
+                "Model not found — use provider/model format (e.g. openai/gpt-4o)",
+                code="model_not_found",
+            )
+        except RateLimitError:
+            return rate_limited("LiteLLM rate limit exceeded", code="rate_limited")
+        except Timeout:
+            return gateway_timeout("LiteLLM request timed out", code="timeout")
+        except Exception:
+            return internal_error(code="litellm_error")
 
     elif engine == "anthropic" or model.startswith("claude-"):
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
@@ -118,20 +123,18 @@ def construct(self):
                 messages=messages,
             )
 
-            # Extract the text content from the response
             code = "".join(block.text for block in response.content)
-
             return jsonify({"code": code})
 
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
+        except Exception:
+            return internal_error(code="anthropic_error")
 
     elif engine == "gemini" or model.startswith("gemini-"):
         try:
             code = generate_gemini_content(model, general_system_prompt, prompt_content)
             return jsonify({"code": code})
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
+        except Exception:
+            return internal_error(code="gemini_error")
 
     else:
         messages = [
@@ -148,8 +151,7 @@ def construct(self):
             )
 
             code = response.choices[0].message.content
-
             return jsonify({"code": code})
 
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
+        except Exception:
+            return internal_error(code="openai_error")
