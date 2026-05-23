@@ -135,6 +135,10 @@ training/
 └── scripts/         # Shell scripts for convenience
 ```
 
+## Dataset Format
+
+See [docs/training-dataset-format.md](../docs/training-dataset-format.md) for the JSONL schema at each pipeline stage: `raw_prompts`, `raw_completions`, `validated_completions`, and the final SFT train/val/test splits.
+
 ## Budget
 
 | Item | Cost |
