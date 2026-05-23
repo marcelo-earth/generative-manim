@@ -363,11 +363,12 @@ Rules:
                     else:
                         yield content
             except Exception as e:
-                error_message = str(e)
+                print(f"Streaming error: {e}")
+                safe_message = f"{type(e).__name__}: generation failed"
                 if is_for_platform:
-                    yield f"{json.dumps({'type': 'error', 'text': error_message})}\n"
+                    yield f"{json.dumps({'type': 'error', 'text': safe_message})}\n"
                 else:
-                    yield f"Error: {error_message}"
+                    yield f"Error: {safe_message}"
 
         response = Response(
             stream_with_context(generate()),
