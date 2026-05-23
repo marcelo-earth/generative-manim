@@ -113,8 +113,25 @@ def main():
     parser.add_argument("--model", type=str, default="gpt-4o")
     parser.add_argument("--concurrency", type=int, default=5)
     parser.add_argument("--no-resume", action="store_true")
-    parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--limit", type=int, default=None,
+                        help="Cap number of prompts to process (useful for testing)")
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Show how many prompts would be processed without calling the API")
     args = parser.parse_args()
+
+    if args.dry_run:
+        input_path = Path(args.input)
+        prompts = [json.loads(line) for line in open(input_path)]
+        if args.limit:
+            prompts = prompts[: args.limit]
+        completed: set = set()
+        output_path = Path(args.output)
+        if not args.no_resume and output_path.exists():
+            completed = {json.loads(l)["prompt"] for l in open(output_path)}
+        remaining = [p for p in prompts if p["prompt"] not in completed]
+        print(f"Dry run: would generate {len(remaining)} completions "
+              f"({len(completed)} already done, {len(prompts)} total)")
+        return
 
     asyncio.run(
         generate_all_completions(
