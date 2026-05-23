@@ -17,3 +17,21 @@ openai = "^0.27.2"
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "F401",  # unused imports (too many legitimate re-exports)
+    "E711",  # comparison to None (style preference)
+    "E712",  # comparison to True/False
+    "W291",  # trailing whitespace
+    "W293",  # whitespace before comment
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

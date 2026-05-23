@@ -1,25 +1,23 @@
-# Use an official lightweight Python image.
-FROM python:3.9-slim
+FROM python:3.11-slim
 
-# Set the working directory to /app
 WORKDIR /app
 
-# Preparing Manim dependencies and build tools
-RUN apt-get update && apt-get -y upgrade && \
-    apt-get install -y build-essential libcairo2-dev libpango1.0-dev pkg-config ffmpeg curl \
-    texlive texlive-latex-extra texlive-fonts-extra texlive-latex-recommended texlive-science
+# System dependencies for manim and ffmpeg
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    libcairo2-dev \
+    libpango1.0-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy the current directory contents into the container at /app
-COPY . /app
-
-# Set the working directory to /app/api, where your Flask app is
-WORKDIR /app/api
-
-# Install any needed packages specified in requirements.txt
+COPY api/requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Make port 8080 available to the world outside this container
+COPY api/ api/
+
+ENV FLASK_APP=api.run
+ENV FLASK_ENV=production
+
 EXPOSE 8080
 
-# Run run.py when the container launches
-CMD ["python", "../run.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "2", "--timeout", "120", "api.run:app"]
