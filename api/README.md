@@ -146,3 +146,40 @@ The `aspect_ratio` field controls the render dimensions. Supported values are:
 - `16:9` for landscape videos
 - `9:16` for portrait videos
 - `1:1` for square videos
+
+### How to check API health?
+
+The `/health` (or `/v1/health`) endpoint returns which LLM providers are configured:
+
+```bash
+curl http://127.0.0.1:8080/health
+```
+
+Example response:
+
+```json
+{
+  "status": "healthy",
+  "configured_providers": 2,
+  "total_providers": 5,
+  "providers": {
+    "openai":      { "configured": true,  "env_var": "OPENAI_API_KEY" },
+    "anthropic":   { "configured": true,  "env_var": "ANTHROPIC_API_KEY" },
+    "gemini":      { "configured": false, "env_var": "GEMINI_API_KEY" },
+    "featherless": { "configured": false, "env_var": "FEATHERLESS_API_KEY" },
+    "litellm":     { "configured": false, "env_var": "LITELLM_API_KEY" }
+  }
+}
+```
+
+Status is `healthy` when at least one provider key is set, `degraded` when none are.
+
+## Supported engines and default models
+
+| Engine       | Default model                   | API key env var         |
+| ------------ | ------------------------------- | ----------------------- |
+| `openai`     | `gpt-4o`                        | `OPENAI_API_KEY`        |
+| `anthropic`  | `claude-sonnet-4-6`             | `ANTHROPIC_API_KEY`     |
+| `gemini`     | `gemini-2.5-flash`              | `GEMINI_API_KEY`        |
+| `featherless`| `Qwen/Qwen2.5-Coder-7B-Instruct`| `FEATHERLESS_API_KEY`   |
+| `litellm`    | `openai/gpt-4o`                 | `LITELLM_API_KEY`       |
