@@ -64,7 +64,10 @@ It began as a prototype of a web app that uses [GPT-4](https://openai.com/resear
 | GM GPT-3.5 Fine Tuned         | First Fine-tuned model of GPT-3.5                                         | GPT-3.5                    | ✅    |
 | GM GPT-3.5 Physics Fine Tuned | Fine-tuned GPT-3.5 model trained to generate Physics animations           | GPT-3.5                    | ✅    |
 | GM Claude Sonnet              | Claude Sonnet 3 model from Sonnet adapted with our custom System Prompt   | claude-3-sonnet-20240229   | ✅    |
-| GM Claude Sonnet 3.5          | Claude Sonnet 3.5 model from Sonnet adapted with our custom System Prompt | claude-3-5-sonnet-20240620 | ✅    |
+| GM Claude Sonnet 3.5          | Claude Sonnet 3.5 model from Sonnet adapted with our custom System Prompt | claude-3-5-sonnet-20241022 | ✅    |
+| GM Claude Sonnet 4.6          | Claude Sonnet 4.6 (default Anthropic model) adapted with our custom System Prompt | claude-sonnet-4-6 | ✅    |
+| GM Claude Opus 4.7            | Claude Opus 4.7 for highest-quality Anthropic generation                  | claude-opus-4-7            | ✅    |
+| GM Claude Haiku 4.5           | Claude Haiku 4.5 for fast, lightweight Anthropic generation               | claude-haiku-4-5-20251001  | ✅    |
 | GM Featherless Open Models    | OpenAI-compatible access to hosted open-weight models via Featherless     | Qwen, DeepSeek, CodeLlama, etc. | ✅ |
 | GM Gemini 2.5 Flash           | Google's Gemini 2.5 Flash accessed via google-genai SDK                  | gemini-2.5-flash           | ✅    |
 | GM Gemini 3 Flash             | Google's Gemini 3 Flash preview accessed via google-genai SDK            | gemini-3-flash-preview     | ✅    |

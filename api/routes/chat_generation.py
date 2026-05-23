@@ -223,7 +223,7 @@ def generate_code_chat():
     # Define default models for each engine
     ENGINE_DEFAULTS = {
         "openai": "gpt-4o",
-        "anthropic": "claude-35-sonnet",
+        "anthropic": "claude-sonnet-4-6",
         "deepseek": "r1",
         "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
         "litellm": "openai/gpt-4o",
@@ -241,7 +241,14 @@ def generate_code_chat():
     # Validate model based on engine
     VALID_MODELS = {
         "openai": ["gpt-4o", "o1-mini"],
-        "anthropic": ["claude-35-sonnet"],
+        "anthropic": [
+            "claude-sonnet-4-6",
+            "claude-opus-4-7",
+            "claude-haiku-4-5-20251001",
+            "claude-3-5-sonnet-20241022",
+            "claude-3-5-haiku-20241022",
+            "claude-35-sonnet",
+        ],
         "deepseek": ["r1"],
         "featherless": None,
         "litellm": None,
@@ -575,7 +582,7 @@ Rules:
                     print("\n=== End of message history ===")
                     
                     stream = client.messages.create(
-                        model="claude-3-5-sonnet-20241022",
+                        model=model,
                         messages=messages,
                         system=system_message,
                         max_tokens=1000,
