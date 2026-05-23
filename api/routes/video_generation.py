@@ -6,6 +6,7 @@ import subprocess
 import uuid
 from openai import OpenAI
 from api.llm_providers import generate_gemini_content
+from api.validation import get_json_body, require_string, validate_aspect_ratio
 
 video_generation_bp = Blueprint('video_generation', __name__)
 
@@ -98,19 +99,24 @@ def generate_video():
         "iteration": 1  // Optional
     }
     """
-    try:
-        # Extract parameters
-        prompt = request.json.get("prompt")
-        engine = request.json.get("engine", "openai")
-        model = request.json.get("model", "gpt-4o")
-        aspect_ratio = request.json.get("aspect_ratio", "16:9")
-        user_id = request.json.get("user_id") or str(uuid.uuid4())
-        project_name = request.json.get("project_name", "untitled")
-        iteration = request.json.get("iteration", 1)
+    body, err = get_json_body()
+    if err:
+        return err
 
-        # Validate prompt
-        if not prompt:
-            return jsonify({"error": "A 'prompt' must be provided"}), 400
+    try:
+        prompt, err = require_string(body, "prompt")
+        if err:
+            return err
+
+        aspect_ratio, err = validate_aspect_ratio(body)
+        if err:
+            return err
+
+        engine = body.get("engine", "openai")
+        model = body.get("model", "gpt-4o")
+        user_id = body.get("user_id") or str(uuid.uuid4())
+        project_name = body.get("project_name", "untitled")
+        iteration = body.get("iteration", 1)
 
         print(f"Generating video from prompt: {prompt}")
 
