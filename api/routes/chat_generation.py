@@ -111,6 +111,89 @@ def manage_conversation_images(messages, new_images_count, engine):
     # Return how many new images we can add
     return min(MAX_IMAGES - current_total, new_images_count)
 
+
+def _generate_manim_preview(code: str, class_name: str) -> str:
+    """Run Manim in PNG mode and return a JSON string with base64-encoded frames.
+
+    Shared by both the Anthropic and OpenAI engine branches.
+    """
+    print("Generating preview")
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    api_dir = os.path.dirname(current_dir)
+
+    temp_dir = os.path.join(api_dir, "temp_manim")
+    os.makedirs(temp_dir, exist_ok=True)
+
+    file_path = os.path.join(temp_dir, f"{class_name}.py")
+    preview_code = f"from manim import *\nfrom math import *\n\n{code}\n"
+
+    with open(file_path, "w") as f:
+        f.write(preview_code)
+
+    command = (
+        f"manim {file_path} {class_name} "
+        f"--format=png --media_dir {temp_dir} --custom_folders -pql --disable_caching"
+    )
+    try:
+        result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
+        print(f"Result: {result}")
+
+        previews_dir = os.path.join(api_dir, "public", "previews")
+        os.makedirs(previews_dir, exist_ok=True)
+        random_string = "".join(random.choices(string.ascii_letters + string.digits, k=12))
+        destination_dir = os.path.join(previews_dir, random_string, class_name)
+
+        png_files = [f for f in os.listdir(temp_dir) if f.endswith(".png")]
+        if png_files:
+            os.makedirs(destination_dir, exist_ok=True)
+            image_list = []
+            for png_file in png_files:
+                shutil.move(os.path.join(temp_dir, png_file), os.path.join(destination_dir, png_file))
+                match = re.search(r"(\d+)\.png$", png_file)
+                if match:
+                    index = int(match.group(1))
+                    if index % 4 == 0:
+                        image_path = os.path.join(destination_dir, png_file)
+                        with Image.open(image_path) as img:
+                            new_w, new_h = img.size[0] // 4, img.size[1] // 4
+                            resized = img.resize((new_w, new_h), Image.LANCZOS)
+                            buf = io.BytesIO()
+                            resized.save(buf, format="PNG")
+                            b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+                        image_list.append({"path": image_path, "index": index, "base64": b64})
+            image_list.sort(key=lambda x: x["index"])
+            return json.dumps({
+                "message": "Animation preview generated. Now you will see the image frames in the next automatic message...",
+                "images": image_list,
+            })
+        else:
+            print(f"No PNG files found in: {temp_dir}")
+            return json.dumps({"error": f"No preview files generated at: {temp_dir}", "images": []})
+
+    except subprocess.CalledProcessError as e:
+        error_output = e.stdout + e.stderr
+        print(f"Error running Manim command: {e}\n{error_output}")
+        return json.dumps({
+            "error": f"ERROR. Error generating preview, please think on what could be the problem, and use `get_preview` to run the code again: {e}\nCommand output:\n{error_output}",
+            "images": [],
+        })
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return json.dumps({"error": f"Unexpected error: {e}", "images": []})
+
+
+def _streaming_response(generate_fn, is_for_platform: bool):
+    """Wrap a generator in a Flask streaming Response with correct SSE headers."""
+    response = Response(
+        stream_with_context(generate_fn()),
+        content_type="text/plain; charset=utf-8",
+    )
+    if is_for_platform:
+        response.headers["Transfer-Encoding"] = "chunked"
+        response.headers["x-vercel-ai-data-stream"] = "v1"
+    return response
+
+
 @chat_generation_bp.route("/v1/chat/generation", methods=["POST"])
 def generate_code_chat():
     """
