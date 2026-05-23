@@ -3,6 +3,7 @@ import anthropic
 import os
 from openai import OpenAI
 from api.llm_providers import generate_gemini_content
+from api.validation import get_json_body
 
 code_generation_bp = Blueprint('code_generation', __name__)
 
@@ -33,16 +34,21 @@ def get_openai_compatible_client(engine: str) -> OpenAI:
 
 @code_generation_bp.route('/v1/code/generation', methods=['POST'])
 def generate_code():
-    body = request.json
+    body, err = get_json_body()
+    if err:
+        return err
+
     prompt_content = body.get("prompt", "")
     engine = body.get("engine", "openai")
 
-    if engine not in ENGINE_DEFAULTS:
+    if not isinstance(engine, str) or engine not in ENGINE_DEFAULTS:
         return jsonify({
             "error": f"Invalid engine. Must be one of: {', '.join(ENGINE_DEFAULTS.keys())}"
         }), 400
 
     model = body.get("model", ENGINE_DEFAULTS[engine])
+    if model is not None and not isinstance(model, str):
+        return jsonify({"error": "'model' must be a string"}), 400
 
     general_system_prompt = """
 You are an assistant that knows about Manim. Manim is a mathematical animation engine that is used to create videos programmatically.
