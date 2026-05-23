@@ -11,6 +11,7 @@ from typing import Union
 import uuid
 import time
 import requests
+from api.validation import get_json_body, require_string, validate_aspect_ratio, validate_boolean
 
 video_rendering_bp = Blueprint("video_rendering", __name__)
 
@@ -91,25 +92,29 @@ def render_video():
     # Now that we have a valid user_id, create a run
     # run_id = create_run_on_user(user_id, "video")
     
-    # Extract the rest of the request data
-    code = request.json.get("code")
-    file_name = request.json.get("file_name")
-    file_class = request.json.get("file_class")
+    body, err = get_json_body()
+    if err:
+        return err
 
-    user_id = request.json.get("user_id") or str(uuid.uuid4())
-    project_name = request.json.get("project_name")
-    iteration = request.json.get("iteration")
+    code, err = require_string(body, "code")
+    if err:
+        return err
 
-    # Aspect Ratio can be: "16:9" (default), "1:1", "9:16"
-    aspect_ratio = request.json.get("aspect_ratio")
+    aspect_ratio, err = validate_aspect_ratio(body)
+    if err:
+        return err
 
-    # Stream the percentage of animation it shown in the error
-    stream = request.json.get("stream", False)
+    stream, err = validate_boolean(body, "stream", default=False)
+    if err:
+        return err
+
+    file_name = body.get("file_name")
+    file_class = body.get("file_class")
+    user_id = body.get("user_id") or str(uuid.uuid4())
+    project_name = body.get("project_name")
+    iteration = body.get("iteration")
 
     video_storage_file_name = f"video-{user_id}-{project_name}-{iteration}"
-
-    if not code:
-        return jsonify(error="No code provided"), 400
 
     # Determine frame size and width based on aspect ratio
     frame_size, frame_width = get_frame_config(aspect_ratio)
