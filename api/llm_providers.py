@@ -1,4 +1,5 @@
 import os
+from typing import Iterator
 
 try:
     from google import genai
@@ -44,3 +45,41 @@ def generate_gemini_content(model: str, system_prompt: str, prompt: str) -> str:
         contents=f"{system_prompt.strip()}\n\nUser request: {prompt}",
     )
     return strip_markdown_code_fence(response.text)
+
+
+def generate_gemini_content_stream(
+    model: str, system_prompt: str, messages: list
+) -> Iterator[str]:
+    """Yield text chunks from a Gemini streaming response.
+
+    *messages* is a list of ``{"role": ..., "content": ...}`` dicts. The
+    system prompt is prepended as a plain string so Gemini receives the full
+    conversation context (the API does not support a separate system role).
+    """
+    if genai is None:
+        raise RuntimeError("google-genai is required to use Gemini models")
+
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is required to use Gemini models")
+
+    client = genai.Client(api_key=api_key)
+
+    parts = [system_prompt.strip()]
+    for msg in messages:
+        role = msg.get("role", "user")
+        content = msg.get("content", "")
+        if isinstance(content, list):
+            content = " ".join(
+                item.get("text", "") for item in content if isinstance(item, dict)
+            )
+        parts.append(f"{role.capitalize()}: {content}")
+
+    contents = "\n\n".join(parts)
+
+    for chunk in client.models.generate_content_stream(
+        model=normalize_gemini_model(model),
+        contents=contents,
+    ):
+        if chunk.text:
+            yield chunk.text
