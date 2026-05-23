@@ -9,6 +9,7 @@ from .routes.code_generation import code_generation_bp
 from .routes.chat_generation import chat_generation_bp
 from .routes.video_generation import video_generation_bp
 from .routes.health import health_bp
+from .routes.models import models_bp
 
 _DEFAULT_LIMITS = ["60 per minute", "500 per hour"]
 
@@ -30,6 +31,7 @@ def create_app():
     app.register_blueprint(chat_generation_bp)
     app.register_blueprint(video_generation_bp)
     app.register_blueprint(health_bp)
+    app.register_blueprint(models_bp)
 
     # Tighter per-IP limits on compute-heavy endpoints
     limiter.limit("20 per minute")(video_rendering_bp)
