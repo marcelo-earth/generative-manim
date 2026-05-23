@@ -10,6 +10,7 @@ import random
 import re
 import base64
 from api.prompts.manimDocs import manimDocs
+from api.llm_providers import generate_gemini_content_stream
 from azure.storage.blob import BlobServiceClient
 from PIL import Image
 import io
@@ -140,6 +141,7 @@ def generate_code_chat():
         "deepseek": "r1",
         "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
         "litellm": "openai/gpt-4o",
+        "gemini": "gemini-2.5-flash",
     }
 
     # Validate and set the model based on engine
@@ -157,6 +159,7 @@ def generate_code_chat():
         "deepseek": ["r1"],
         "featherless": None,
         "litellm": None,
+        "gemini": None,
     }
 
     if VALID_MODELS[engine] is not None and model not in VALID_MODELS[engine]:
@@ -427,6 +430,33 @@ Rules:
         if is_for_platform:
             response.headers['Transfer-Encoding'] = 'chunked'
             response.headers['x-vercel-ai-data-stream'] = 'v1'
+        return response
+
+    if engine == "gemini":
+        gemini_system_prompt = general_system_prompt
+
+        def generate():
+            try:
+                for chunk in generate_gemini_content_stream(model, gemini_system_prompt, messages):
+                    if is_for_platform:
+                        text_obj = json.dumps({"type": "text", "text": chunk})
+                        yield f"{text_obj}\n"
+                    else:
+                        yield chunk
+            except Exception as e:
+                safe_message = f"{type(e).__name__}: generation failed"
+                if is_for_platform:
+                    yield f"{json.dumps({'type': 'error', 'text': safe_message})}\n"
+                else:
+                    yield f"Error: {safe_message}"
+
+        response = Response(
+            stream_with_context(generate()),
+            content_type="text/plain; charset=utf-8",
+        )
+        if is_for_platform:
+            response.headers["Transfer-Encoding"] = "chunked"
+            response.headers["x-vercel-ai-data-stream"] = "v1"
         return response
 
     if engine == "anthropic":
