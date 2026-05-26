@@ -98,10 +98,10 @@ def construct(self):
             return jsonify({"code": code})
 
         except AuthenticationError:
-            return unauthorized("Authentication failed — check LITELLM_API_KEY", code="auth_failed")
+            return unauthorized("Authentication failed: check LITELLM_API_KEY", code="auth_failed")
         except NotFoundError:
             return not_found(
-                "Model not found — use provider/model format (e.g. openai/gpt-4o)",
+                "Model not found: use provider/model format (e.g. openai/gpt-4o)",
                 code="model_not_found",
             )
         except RateLimitError:
