@@ -6,42 +6,12 @@ import subprocess
 import uuid
 from openai import OpenAI
 from api.llm_providers import generate_gemini_content
+from api.prompts.system import MANIM_CODE_GENERATION_PROMPT
 from api.validation import get_json_body, require_string, validate_aspect_ratio
 from api.errors import internal_error, gateway_timeout
+from api.video_utils import get_frame_config
 
 video_generation_bp = Blueprint('video_generation', __name__)
-
-CODE_GENERATION_SYSTEM_PROMPT = """
-You are an assistant that knows about Manim. Manim is a mathematical animation engine that is used to create videos programmatically.
-
-The following is an example of the code:
-\`\`\`
-from manim import *
-from math import *
-
-class GenScene(Scene):
-    def construct(self):
-        c = Circle(color=BLUE)
-        self.play(Create(c))
-
-\`\`\`
-
-# Rules
-1. Always use GenScene as the class name, otherwise, the code will not work.
-2. Always use self.play() to play the animation, otherwise, the code will not work.
-3. Do not use text to explain the code, only the code.
-4. Do not explain the code, only the code.
-"""
-
-def get_frame_config(aspect_ratio):
-    if aspect_ratio == "16:9":
-        return (3840, 2160), 14.22
-    elif aspect_ratio == "9:16":
-        return (1080, 1920), 8.0
-    elif aspect_ratio == "1:1":
-        return (1080, 1080), 8.0
-    else:
-        return (3840, 2160), 14.22
 
 
 def generate_manim_code(prompt, engine="openai", model="gpt-4o"):
@@ -54,7 +24,7 @@ def generate_manim_code(prompt, engine="openai", model="gpt-4o"):
                 model=model,
                 max_tokens=1000,
                 temperature=0.2,
-                system=CODE_GENERATION_SYSTEM_PROMPT,
+                system=MANIM_CODE_GENERATION_PROMPT,
                 messages=messages,
             )
             code = "".join(block.text for block in response.content)
@@ -63,13 +33,13 @@ def generate_manim_code(prompt, engine="openai", model="gpt-4o"):
             raise Exception(f"Error generating code with {model}: {str(e)}")
     elif engine == "gemini" or model.startswith("gemini-"):
         try:
-            return generate_gemini_content(model, CODE_GENERATION_SYSTEM_PROMPT, prompt)
+            return generate_gemini_content(model, MANIM_CODE_GENERATION_PROMPT, prompt)
         except Exception as e:
             raise Exception(f"Error generating code with {model}: {str(e)}")
     else:
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         messages = [
-            {"role": "system", "content": CODE_GENERATION_SYSTEM_PROMPT},
+            {"role": "system", "content": MANIM_CODE_GENERATION_PROMPT},
             {"role": "user", "content": prompt},
         ]
         try:

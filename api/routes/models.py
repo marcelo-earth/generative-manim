@@ -10,17 +10,17 @@ _ENGINES = {
         "env_var": "OPENAI_API_KEY",
         "default": "gpt-4o",
         "models": [
-            {"id": "gpt-4o", "description": "GPT-4o — OpenAI's latest multimodal model"},
-            {"id": "o1-mini", "description": "o1-mini — compact reasoning model"},
+            {"id": "gpt-4o", "description": "GPT-4o: OpenAI's latest multimodal model"},
+            {"id": "o1-mini", "description": "o1-mini: compact reasoning model"},
         ],
     },
     "anthropic": {
         "env_var": "ANTHROPIC_API_KEY",
         "default": "claude-sonnet-4-6",
         "models": [
-            {"id": "claude-sonnet-4-6", "description": "Claude Sonnet 4.6 — balanced speed and quality"},
-            {"id": "claude-opus-4-7", "description": "Claude Opus 4.7 — highest capability"},
-            {"id": "claude-haiku-4-5-20251001", "description": "Claude Haiku 4.5 — fastest and most compact"},
+            {"id": "claude-sonnet-4-6", "description": "Claude Sonnet 4.6: balanced speed and quality"},
+            {"id": "claude-opus-4-7", "description": "Claude Opus 4.7: highest capability"},
+            {"id": "claude-haiku-4-5-20251001", "description": "Claude Haiku 4.5: fastest and most compact"},
             {"id": "claude-3-5-sonnet-20241022", "description": "Claude 3.5 Sonnet (legacy)"},
         ],
     },
@@ -28,8 +28,8 @@ _ENGINES = {
         "env_var": "GEMINI_API_KEY",
         "default": "gemini-2.5-flash",
         "models": [
-            {"id": "gemini-2.5-flash", "description": "Gemini 2.5 Flash — fast and efficient"},
-            {"id": "gemini-2.5-pro", "description": "Gemini 2.5 Pro — highest capability"},
+            {"id": "gemini-2.5-flash", "description": "Gemini 2.5 Flash: fast and efficient"},
+            {"id": "gemini-2.5-pro", "description": "Gemini 2.5 Pro: highest capability"},
         ],
     },
     "featherless": {

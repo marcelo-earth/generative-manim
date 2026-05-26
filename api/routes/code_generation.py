@@ -3,6 +3,7 @@ import anthropic
 import os
 from openai import OpenAI
 from api.llm_providers import generate_gemini_content
+from api.prompts.system import MANIM_CODE_GENERATION_PROMPT
 from api.validation import get_json_body
 from api.errors import bad_request, unauthorized, not_found, rate_limited, gateway_timeout, internal_error
 
@@ -52,27 +53,7 @@ def generate_code():
     if model is not None and not isinstance(model, str):
         return bad_request("'model' must be a string", code="invalid_model")
 
-    general_system_prompt = """
-You are an assistant that knows about Manim. Manim is a mathematical animation engine that is used to create videos programmatically.
-
-The following is an example of the code:
-\`\`\`
-from manim import *
-from math import *
-
-class GenScene(Scene):
-def construct(self):
-    c = Circle(color=BLUE)
-    self.play(Create(c))
-
-\`\`\`
-
-# Rules
-1. Always use GenScene as the class name, otherwise, the code will not work.
-2. Always use self.play() to play the animation, otherwise, the code will not work.
-3. Do not use text to explain the code, only the code.
-4. Do not explain the code, only the code.
-    """
+    general_system_prompt = MANIM_CODE_GENERATION_PROMPT
 
     if engine == "litellm":
         import litellm
@@ -98,10 +79,10 @@ def construct(self):
             return jsonify({"code": code})
 
         except AuthenticationError:
-            return unauthorized("Authentication failed — check LITELLM_API_KEY", code="auth_failed")
+            return unauthorized("Authentication failed: check LITELLM_API_KEY", code="auth_failed")
         except NotFoundError:
             return not_found(
-                "Model not found — use provider/model format (e.g. openai/gpt-4o)",
+                "Model not found: use provider/model format (e.g. openai/gpt-4o)",
                 code="model_not_found",
             )
         except RateLimitError:
