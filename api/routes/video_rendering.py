@@ -12,6 +12,7 @@ import uuid
 import time
 import requests
 from api.validation import get_json_body, require_string, validate_aspect_ratio, validate_boolean
+from api.video_utils import get_frame_config
 
 video_rendering_bp = Blueprint("video_rendering", __name__)
 
@@ -62,17 +63,6 @@ def move_to_public_folder(
     url_base = base_url if base_url else BASE_URL
     video_url = f"{url_base.rstrip('/')}/public/{new_file_name}"
     return video_url
-
-
-def get_frame_config(aspect_ratio):
-    if aspect_ratio == "16:9":
-        return (3840, 2160), 14.22
-    elif aspect_ratio == "9:16":
-        return (1080, 1920), 8.0
-    elif aspect_ratio == "1:1":
-        return (1080, 1080), 8.0
-    else:
-        return (3840, 2160), 14.22
 
 
 @video_rendering_bp.route("/v1/video/rendering", methods=["POST"])

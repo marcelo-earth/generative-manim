@@ -9,18 +9,9 @@ from api.llm_providers import generate_gemini_content
 from api.prompts.system import MANIM_CODE_GENERATION_PROMPT
 from api.validation import get_json_body, require_string, validate_aspect_ratio
 from api.errors import internal_error, gateway_timeout
+from api.video_utils import get_frame_config
 
 video_generation_bp = Blueprint('video_generation', __name__)
-
-def get_frame_config(aspect_ratio):
-    if aspect_ratio == "16:9":
-        return (3840, 2160), 14.22
-    elif aspect_ratio == "9:16":
-        return (1080, 1920), 8.0
-    elif aspect_ratio == "1:1":
-        return (1080, 1080), 8.0
-    else:
-        return (3840, 2160), 14.22
 
 
 def generate_manim_code(prompt, engine="openai", model="gpt-4o"):
