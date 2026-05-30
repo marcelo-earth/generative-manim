@@ -182,7 +182,6 @@ config.frame_width = {frame_width}
                     raise FileNotFoundError(f"Video file not found at {video_file_path}")
 
                 if USE_LOCAL_STORAGE:
-                    # Pass request.host_url if available
                     base_url = (
                         request.host_url
                         if request and hasattr(request, "host_url")
