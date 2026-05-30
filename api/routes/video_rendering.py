@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, current_app, request, Response
+from flask import Blueprint, jsonify, request, Response
 import subprocess
 import os
 import re
