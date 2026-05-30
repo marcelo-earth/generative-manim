@@ -511,7 +511,6 @@ Rules:
                 message["content"] = content
             return message
 
-        # Extract system message and remove it from the messages list
         system_message = next(
             (msg["content"] for msg in messages if msg["role"] == "system"), None
         )
@@ -706,7 +705,6 @@ Rules:
                                         })
                                         yield f'{partial_call_obj}\n'
                         
-                        # If we get here, the stream completed successfully
                         break
                     
                     except APIError as e:
