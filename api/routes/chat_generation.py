@@ -22,6 +22,31 @@ chat_generation_bp = Blueprint("chat_generation", __name__)
 
 FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
 
+_ENGINE_DEFAULTS = {
+    "openai": "gpt-4o",
+    "anthropic": "claude-sonnet-4-6",
+    "deepseek": "r1",
+    "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
+    "litellm": "openai/gpt-4o",
+    "gemini": "gemini-2.5-flash",
+}
+
+_VALID_MODELS = {
+    "openai": ["gpt-4o", "o1-mini"],
+    "anthropic": [
+        "claude-sonnet-4-6",
+        "claude-opus-4-7",
+        "claude-haiku-4-5-20251001",
+        "claude-3-5-sonnet-20241022",
+        "claude-3-5-haiku-20241022",
+        "claude-35-sonnet",
+    ],
+    "deepseek": ["r1"],
+    "featherless": None,
+    "litellm": None,
+    "gemini": None,
+}
+
 
 animo_functions = {
     "openai": [
@@ -203,48 +228,19 @@ def generate_code_chat():
     scenes = data.get("scenes", [])
     project_title = data.get("projectTitle", "")
     engine = data.get("engine", "openai")
-    model = data.get("model", None)  # Optional model parameter
+    model = data.get("model", None)
     selected_scenes = data.get("selectedScenes", [])
     is_for_platform = data.get("isForPlatform", False)
 
-    # Define default models for each engine
-    ENGINE_DEFAULTS = {
-        "openai": "gpt-4o",
-        "anthropic": "claude-sonnet-4-6",
-        "deepseek": "r1",
-        "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
-        "litellm": "openai/gpt-4o",
-        "gemini": "gemini-2.5-flash",
-    }
+    if engine not in _ENGINE_DEFAULTS:
+        return jsonify({"error": f"Invalid engine. Must be one of: {', '.join(_ENGINE_DEFAULTS.keys())}"}), 400
 
-    # Validate and set the model based on engine
-    if engine not in ENGINE_DEFAULTS:
-        return jsonify({"error": f"Invalid engine. Must be one of: {', '.join(ENGINE_DEFAULTS.keys())}"}), 400
-
-    # If no model specified, use the default for the engine
     if not model:
-        model = ENGINE_DEFAULTS[engine]
+        model = _ENGINE_DEFAULTS[engine]
 
-    # Validate model based on engine
-    VALID_MODELS = {
-        "openai": ["gpt-4o", "o1-mini"],
-        "anthropic": [
-            "claude-sonnet-4-6",
-            "claude-opus-4-7",
-            "claude-haiku-4-5-20251001",
-            "claude-3-5-sonnet-20241022",
-            "claude-3-5-haiku-20241022",
-            "claude-35-sonnet",
-        ],
-        "deepseek": ["r1"],
-        "featherless": None,
-        "litellm": None,
-        "gemini": None,
-    }
-
-    if VALID_MODELS[engine] is not None and model not in VALID_MODELS[engine]:
+    if _VALID_MODELS[engine] is not None and model not in _VALID_MODELS[engine]:
         return jsonify({
-            "error": f"Invalid model '{model}' for engine '{engine}'. Valid models are: {', '.join(VALID_MODELS[engine])}"
+            "error": f"Invalid model '{model}' for engine '{engine}'. Valid models are: {', '.join(_VALID_MODELS[engine])}"
         }), 400
 
     if not messages and prompt:
