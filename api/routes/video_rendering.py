@@ -22,9 +22,6 @@ BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8080")
 
 
 def upload_to_azure_storage(file_path: str, video_storage_file_name: str) -> str:
-    """
-    Uploads the video to Azure Blob Storage and returns the URL.
-    """
     cloud_file_name = f"{video_storage_file_name}.mp4"
 
     connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
@@ -34,11 +31,9 @@ def upload_to_azure_storage(file_path: str, video_storage_file_name: str) -> str
         container=container_name, blob=cloud_file_name
     )
 
-    # Upload the video file
     with open(file_path, "rb") as data:
         blob_client.upload_blob(data, overwrite=True)
 
-    # Construct the URL of the uploaded blob
     blob_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_name}/{cloud_file_name}"
     return blob_url
 
@@ -46,10 +41,6 @@ def upload_to_azure_storage(file_path: str, video_storage_file_name: str) -> str
 def move_to_public_folder(
     file_path: str, video_storage_file_name: str, base_url: Union[str, None] = None
 ) -> str:
-    """
-    Moves the video to the public folder and returns the URL.
-    """
-    # Get the api directory (go up one level from routes)
     api_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     public_folder = os.path.join(api_dir, "public")
     os.makedirs(public_folder, exist_ok=True)
@@ -59,7 +50,6 @@ def move_to_public_folder(
 
     shutil.move(file_path, new_file_path)
 
-    # Use the provided base_url if available, otherwise fall back to BASE_URL
     url_base = base_url if base_url else BASE_URL
     video_url = f"{url_base.rstrip('/')}/public/{new_file_name}"
     return video_url
