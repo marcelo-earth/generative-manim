@@ -125,11 +125,7 @@ def manage_conversation_images(messages, new_images_count, engine):
 
 
 def _generate_manim_preview(code: str, class_name: str) -> str:
-    """Run Manim in PNG mode and return a JSON string with base64-encoded frames.
-
-    Shared by both the Anthropic and OpenAI engine branches.
-    """
-    print("Generating preview")
+    """Run Manim in PNG mode and return a JSON string with base64-encoded frames."""
     current_dir = os.path.dirname(os.path.abspath(__file__))
     api_dir = os.path.dirname(current_dir)
 
@@ -148,7 +144,6 @@ def _generate_manim_preview(code: str, class_name: str) -> str:
     )
     try:
         result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
-        print(f"Result: {result}")
 
         previews_dir = os.path.join(api_dir, "public", "previews")
         os.makedirs(previews_dir, exist_ok=True)
@@ -179,18 +174,15 @@ def _generate_manim_preview(code: str, class_name: str) -> str:
                 "images": image_list,
             })
         else:
-            print(f"No PNG files found in: {temp_dir}")
             return json.dumps({"error": f"No preview files generated at: {temp_dir}", "images": []})
 
     except subprocess.CalledProcessError as e:
         error_output = e.stdout + e.stderr
-        print(f"Error running Manim command: {e}\n{error_output}")
         return json.dumps({
             "error": f"ERROR. Error generating preview, please think on what could be the problem, and use `get_preview` to run the code again: {e}\nCommand output:\n{error_output}",
             "images": [],
         })
     except Exception as e:
-        print(f"Unexpected error: {e}")
         return json.dumps({"error": f"Unexpected error: {e}", "images": []})
 
 
@@ -208,18 +200,9 @@ def _streaming_response(generate_fn, is_for_platform: bool):
 
 @chat_generation_bp.route("/v1/chat/generation", methods=["POST"])
 def generate_code_chat():
-    """
-    This endpoint generates code for animations using OpenAI or Anthropic.
-    It supports both OpenAI and Anthropic models and returns a stream of content.
-    
-    When calling this endpoint, enable `is_for_platform` to interact with the platform 'Animo'.
-    """
-    print("Received request for /v1/chat/generation")
-
     data, err = get_json_body()
     if err:
         return err
-    print(f"Request data: {json.dumps(data, indent=2)}")
 
     messages = data.get("messages", [])
     prompt = data.get("prompt")
@@ -245,9 +228,6 @@ def generate_code_chat():
 
     if not messages and prompt:
         messages = [{"role": "user", "content": prompt}]
-    
-    print("messages")
-    print(messages)
 
     general_system_prompt = """You are an assistant that creates animations with Manim. Manim is a mathematical animation engine that is used to create videos programmatically. You are running on Animo (www.animo.video), a tool to create videos with Manim.
 
@@ -485,7 +465,6 @@ Rules:
                     else:
                         yield content
             except Exception as e:
-                print(f"Streaming error: {e}")
                 safe_message = f"{type(e).__name__}: generation failed"
                 if is_for_platform:
                     yield f"{json.dumps({'type': 'error', 'text': safe_message})}\n"
@@ -546,24 +525,6 @@ Rules:
             try:
                 messages = anthropic_messages
                 while True:
-                    print("\n=== Starting new message stream ===")
-                    print("=== Current message history ===")
-                    for idx, msg in enumerate(messages):
-                        print(f"\nMessage {idx}:")
-                        print(f"Role: {msg['role']}")
-                        if isinstance(msg['content'], list):
-                            print("Content (list):")
-                            for content_item in msg['content']:
-                                if isinstance(content_item, dict):
-                                    print(f"  Type: {content_item.get('type', 'unknown')}")
-                                    if content_item['type'] == 'text':
-                                        print(f"  Text: {content_item['text']}")
-                                    elif content_item['type'] == 'tool_result':
-                                        print(f"  Tool use ID: {content_item.get('tool_use_id')}")
-                        else:
-                            print(f"Content: {msg['content']}")
-                    print("\n=== End of message history ===")
-                    
                     stream = client.messages.create(
                         model=model,
                         messages=messages,
@@ -574,37 +535,29 @@ Rules:
                     )
                     
                     current_message = {"role": "assistant", "content": []}
-                    current_text = ""  # To accumulate text content
+                    current_text = ""
                     json_buffer = ""
                     should_continue = False
                     tool_use_id = None
                     complete_json = ""
                     
                     for chunk in stream:
-                        print(f"\nChunk type: {chunk.type}")
-                        print(f"Chunk content: {chunk}")
-                        
                         if chunk.type == "content_block_start":
                             if hasattr(chunk.content_block, 'type'):
                                 if chunk.content_block.type == 'tool_use':
                                     tool_use_id = chunk.content_block.id
-                                    print(f"Captured tool_use_id: {tool_use_id}")
-                                    
-                                    # If we have accumulated text, add it first
                                     if current_text:
                                         current_message["content"].append({
                                             "type": "text",
                                             "text": current_text
                                         })
                                         current_text = ""
-                                    
-                                    # Add tool use block
                                     tool_input = {}
                                     if complete_json:
                                         try:
                                             tool_input = json.loads(complete_json)
                                         except json.JSONDecodeError:
-                                            print("Failed to parse tool input JSON")
+                                            pass
                                     
                                     current_message["content"].append({
                                         "type": "tool_use",
@@ -617,8 +570,7 @@ Rules:
                             if hasattr(chunk.delta, 'text'):
                                 content = chunk.delta.text
                                 if content:
-                                    print(f"Text content: {content}")
-                                    current_text += content  # Accumulate text
+                                    current_text += content
                                     if is_for_platform:
                                         for char in content:
                                             escaped_char = repr(char)[1:-1]
@@ -628,50 +580,33 @@ Rules:
                                 
                             elif hasattr(chunk.delta, 'partial_json'):
                                 complete_json += chunk.delta.partial_json
-                                print(f"Accumulated complete JSON: {complete_json}")
 
                         elif chunk.type == "content_block_stop":
                             if complete_json:
                                 try:
-                                    print("\n=== Processing tool call ===")
                                     tool_call = json.loads(complete_json)
-                                    print(f"Tool call data: {json.dumps(tool_call, indent=2)}")
-                                    print(f"Using tool_use_id: {tool_use_id}")
-                                    
                                     preview_result = get_preview(
                                         code=tool_call.get('code', ''),
                                         class_name=tool_call.get('class_name', '')
                                     )
-                                    
                                     try:
                                         preview_data = json.loads(preview_result)
-                                        print("\nParsed preview data keys:", preview_data.keys())
-                                        
-                                        # Just use the middle frame for testing
                                         middle_frame = preview_data['images'][len(preview_data['images'])//2]
                                         base64_data = middle_frame['base64']
-                                        
-                                        # Debug the base64 data
-                                        print(f"\nBase64 data length: {len(base64_data)}")
-                                        print(f"Base64 data starts with: {base64_data[:50]}")
-                                        print(f"Base64 data ends with: {base64_data[-50:]}")
-                                        
-                                        # Create simplified content blocks with just one frame
                                         content_blocks = [
                                             {
                                                 "type": "image",
                                                 "source": {
                                                     "type": "base64",
                                                     "media_type": "image/png",
-                                                    "data": base64_data  # Use raw base64 without prefix
+                                                    "data": base64_data,
                                                 }
                                             },
                                             {
                                                 "type": "text",
-                                                "text": f"\nPreview frame from the animation.\n"
+                                                "text": "\nPreview frame from the animation.\n"
                                             }
                                         ]
-                                        
                                         tool_response = {
                                             "role": "user",
                                             "content": [{
@@ -680,11 +615,6 @@ Rules:
                                                 "content": content_blocks
                                             }]
                                         }
-                                        
-                                        print(f"\nTool response structure:")
-                                        print(json.dumps(tool_response, indent=2))
-                                        
-                                        # Add the assistant's message with tool use before adding tool result
                                         messages.append(current_message)
                                         messages.append(tool_response)
                                         should_continue = True
@@ -699,17 +629,11 @@ Rules:
                                             yield "\n[Preview frame]\n"
                                         
                                     except json.JSONDecodeError:
-                                        print("Failed to parse preview result as JSON")
-                                        print("Raw preview result:", preview_result)
                                         continue
-                                
-                                except Exception as e:
-                                    print(f"Error processing tool call: {str(e)}")
+                                except Exception:
                                     continue
-                        
+
                         elif chunk.type == "message_stop":
-                            print("\n=== Message stream ended ===")
-                            # Add any remaining text content
                             if current_text:
                                 if not current_message["content"]:
                                     current_message["content"] = []
@@ -727,7 +651,6 @@ Rules:
                         break
 
             except Exception as e:
-                print(f"\n=== Error occurred ===\nError details: {str(e)}")
                 error_message = f'0:"{str(e)}"\n' if is_for_platform else f"Error: {str(e)}"
                 yield error_message
 
@@ -788,12 +711,10 @@ Rules:
                     
                     except APIError as e:
                         if attempt < max_retries - 1:
-                            print(f"APIError occurred: {str(e)}. Retrying in {retry_delay} seconds...")
                             time.sleep(retry_delay)
                         else:
-                            print(f"Max retries reached. APIError: {str(e)}")
                             yield json.dumps({"error": "Max retries reached due to API errors"})
-                            return  # Exit the generator
+                            return
 
                 if function_call_data:
                     # Add the function call to messages
@@ -822,9 +743,7 @@ Rules:
                     else:
                         pass
 
-                    # Actually call get_preview
                     if function_name == "get_preview":
-                        print(f"Calling get_preview with data: {function_call_data}")
                         args = json.loads(function_call_data)
                         result = get_preview(args['code'], args['class_name'])
                         result_json = json.loads(result)
@@ -904,5 +823,4 @@ Rules:
             else:
                 yield final_message
 
-        print("Generating response")
         return _streaming_response(generate, is_for_platform)
