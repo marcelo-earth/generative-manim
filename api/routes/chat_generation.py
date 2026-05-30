@@ -12,7 +12,6 @@ import base64
 from api.prompts.manimDocs import manimDocs
 from api.llm_providers import generate_gemini_content_stream
 from api.validation import get_json_body
-from azure.storage.blob import BlobServiceClient
 from PIL import Image
 import io
 import time
@@ -69,46 +68,34 @@ animo_functions = {
 }
 
 def count_images_in_conversation(messages):
-    """
-    Count the total number of images in the conversation.
-    Returns a tuple of (total_count, list of image messages indices)
-    """
     total_images = 0
     image_message_indices = []
-    
     for i, message in enumerate(messages):
         if message.get("role") == "user" and isinstance(message.get("content"), list):
-            image_count = sum(1 for content in message["content"] if isinstance(content, dict) and content.get("type") == "image_url")
+            image_count = sum(
+                1 for content in message["content"]
+                if isinstance(content, dict) and content.get("type") == "image_url"
+            )
             if image_count > 0:
                 total_images += image_count
                 image_message_indices.append(i)
-    
     return total_images, image_message_indices
 
 def manage_conversation_images(messages, new_images_count, engine):
-    """
-    Manage the conversation to ensure we don't exceed image limits.
-    For OpenAI, we maintain only the last 50 images.
-    Returns the maximum number of new images we can add.
-    """
     if engine != "openai":
-        return len(new_images_count)  # No limit for other engines
-        
+        return new_images_count
+
     MAX_IMAGES = 50
     current_total, image_indices = count_images_in_conversation(messages)
-    
-    # If we already have too many images, remove old image messages
+
     while current_total > 0 and current_total + new_images_count > MAX_IMAGES and image_indices:
         oldest_image_idx = image_indices[0]
         removed_message = messages.pop(oldest_image_idx)
-        # Recount images in the removed message
-        removed_images = sum(1 for content in removed_message["content"] 
-                           if isinstance(content, dict) and content.get("type") == "image_url")
+        removed_images = sum(1 for content in removed_message["content"]
+                             if isinstance(content, dict) and content.get("type") == "image_url")
         current_total -= removed_images
-        # Update indices after removal
-        image_indices = [idx - 1 for idx in image_indices[1:]]  # Adjust remaining indices
-    
-    # Return how many new images we can add
+        image_indices = [idx - 1 for idx in image_indices[1:]]
+
     return min(MAX_IMAGES - current_total, new_images_count)
 
 
