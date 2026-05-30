@@ -69,19 +69,6 @@ def reset_mocks():
     yield
 
 
-@pytest.fixture
-def app():
-    sys.path.insert(0, ".")
-    from api.run import app
-    app.config["TESTING"] = True
-    return app
-
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
-
-
 class TestCodeGenerationLiteLLM:
     """Tests for the /v1/code/generation endpoint with litellm engine."""
 
