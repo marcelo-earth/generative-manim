@@ -119,7 +119,7 @@ config.frame_width = {frame_width}
                 stderr=subprocess.PIPE,
                 cwd=os.path.dirname(os.path.realpath(__file__)),
                 text=True,
-                bufsize=1,  # Ensure the output is in text mode and line-buffered
+                bufsize=1,
             )
             current_animation = -1
             current_percentage = 0
@@ -133,23 +133,17 @@ config.frame_width = {frame_width}
                 if output == "" and error == "" and process.poll() is not None:
                     break
 
-                if output:
-                    print("STDOUT:", output.strip())
                 if error:
-                    print("STDERR:", error.strip())
                     error_output.append(error.strip())
-                    
-                # Check for critical errors
+
                 if "is not in the script" in error:
                     in_error = True
                     continue
 
-                # Check for start of error
                 if "Traceback (most recent call last)" in error:
                     in_error = True
                     continue
 
-                # If we're in an error state, keep accumulating the error message
                 if in_error:
                     if error.strip() == "":
                         # Empty line might indicate end of traceback
@@ -175,31 +169,19 @@ config.frame_width = {frame_width}
                         yield f'{{"animationIndex": {current_animation}, "percentage": {current_percentage}}}\n'
 
             if process.returncode == 0:
-                # Update this part
                 video_file_path = os.path.join(
                     os.path.dirname(os.path.realpath(__file__)),
                     f"{file_class or 'GenScene'}.mp4"
                 )
-                # Looking for video file at: {video_file_path}
-                
                 if not os.path.exists(video_file_path):
-                    #  Video file not found. Searching in parent directory...
                     video_file_path = os.path.join(
                         os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
                         f"{file_class or 'GenScene'}.mp4"
                     )
-                    # New video file path is: {video_file_path}
-
-                if os.path.exists(video_file_path):
-                    print(f"Video file found at: {video_file_path}")
-                else:
-                    print(f"Video file not found. Files in current directory: {os.listdir(os.path.dirname(video_file_path))}")
+                if not os.path.exists(video_file_path):
                     raise FileNotFoundError(f"Video file not found at {video_file_path}")
 
-                print(f"Files in video file directory: {os.listdir(os.path.dirname(video_file_path))}")
-                
                 if USE_LOCAL_STORAGE:
-                    # Pass request.host_url if available
                     base_url = (
                         request.host_url
                         if request and hasattr(request, "host_url")
@@ -212,7 +194,6 @@ config.frame_width = {frame_width}
                     video_url = upload_to_azure_storage(
                         video_file_path, video_storage_file_name
                     )
-                print(f"Video URL: {video_url}")
                 if stream:
                     yield f'{{ "video_url": "{video_url}" }}\n'
                     sys.stdout.flush()
@@ -226,33 +207,25 @@ config.frame_width = {frame_width}
                 yield f'{{"error": {json.dumps(full_error)}}}\n'
 
         except Exception as e:
-            print(f"Unexpected error: {str(e)}")
             traceback.print_exc()
-            print(f"Files in current directory after error: {os.listdir('.')}")
             yield f'{{"error": "Unexpected error occurred: {str(e)}"}}\n'
         finally:
-            # Remove the temporary Python file
             try:
                 if os.path.exists(file_path):
                     os.remove(file_path)
-                    print(f"Removed temporary file: {file_path}")
-                # Remove the video file
                 if os.path.exists(video_file_path):
                     os.remove(video_file_path)
-                    print(f"Removed temporary video file: {video_file_path}")
-            except Exception as e:
-                print(f"Error removing temporary file {file_path}: {e}")
+            except Exception:
+                pass
 
     if stream:
-        # TODO: If the `render_video()` fails, or it's sending {"error"}, be sure to add `500`
         return Response(
             render_video(), content_type="text/event-stream", status=207
         )
     else:
         video_url = None
         try:
-            for result in render_video():  # Iterate through the generator
-                print(f"Generated result: {result}")  # Debug print
+            for result in render_video():
                 try:
                     result_dict = json.loads(result)
                     if "video_url" in result_dict:
@@ -260,7 +233,6 @@ config.frame_width = {frame_width}
                     elif "error" in result_dict:
                         raise Exception(result_dict["error"])
                 except (json.JSONDecodeError, TypeError):
-                    # If it's not a JSON string, try treating it as a dict (shouldn't happen now)
                     if isinstance(result, dict):
                         if "video_url" in result:
                             video_url = result["video_url"]
@@ -307,7 +279,6 @@ config.frame_width = {frame_width}
                     200,
                 )
         except Exception as e:
-            print(f"Error in non-streaming mode: {e}")
             return jsonify({"error": str(e)}), 500
 
 
@@ -339,20 +310,13 @@ def export_video():
 
     try:
         subprocess.run(command_list, check=True)
-        print("Videos merged successfully.")
-        print(f"merged_filename: {merged_filename}")
         public_url = upload_to_azure_storage(
             merged_filename, f"exported-scene-{title_slug}-{timestamp}"
         )
-        print(f"Video URL: {public_url}")
-        return jsonify(
-            {"status": "Videos merged successfully", "video_url": public_url}
-        )
-    except subprocess.CalledProcessError as e:
-        print(f"ffmpeg error: {e}")
+        return jsonify({"status": "Videos merged successfully", "video_url": public_url})
+    except subprocess.CalledProcessError:
         return jsonify({"error": "Failed to merge videos"}), 500
     except Exception as e:
-        print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
 
 
