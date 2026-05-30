@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, current_app, request, Response
+from flask import Blueprint, jsonify, request, Response
 import subprocess
 import os
 import re
@@ -22,9 +22,6 @@ BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8080")
 
 
 def upload_to_azure_storage(file_path: str, video_storage_file_name: str) -> str:
-    """
-    Uploads the video to Azure Blob Storage and returns the URL.
-    """
     cloud_file_name = f"{video_storage_file_name}.mp4"
 
     connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
@@ -34,11 +31,9 @@ def upload_to_azure_storage(file_path: str, video_storage_file_name: str) -> str
         container=container_name, blob=cloud_file_name
     )
 
-    # Upload the video file
     with open(file_path, "rb") as data:
         blob_client.upload_blob(data, overwrite=True)
 
-    # Construct the URL of the uploaded blob
     blob_url = f"https://{blob_service_client.account_name}.blob.core.windows.net/{container_name}/{cloud_file_name}"
     return blob_url
 
@@ -46,10 +41,6 @@ def upload_to_azure_storage(file_path: str, video_storage_file_name: str) -> str
 def move_to_public_folder(
     file_path: str, video_storage_file_name: str, base_url: Union[str, None] = None
 ) -> str:
-    """
-    Moves the video to the public folder and returns the URL.
-    """
-    # Get the api directory (go up one level from routes)
     api_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     public_folder = os.path.join(api_dir, "public")
     os.makedirs(public_folder, exist_ok=True)
@@ -59,7 +50,6 @@ def move_to_public_folder(
 
     shutil.move(file_path, new_file_path)
 
-    # Use the provided base_url if available, otherwise fall back to BASE_URL
     url_base = base_url if base_url else BASE_URL
     video_url = f"{url_base.rstrip('/')}/public/{new_file_name}"
     return video_url
@@ -67,21 +57,6 @@ def move_to_public_folder(
 
 @video_rendering_bp.route("/v1/video/rendering", methods=["POST"])
 def render_video():
-    # Get the API key from the request headers
-    # api_key = request.headers.get('X-API-Key')
-    
-    # if not api_key:
-    #     return jsonify({"error": "API key is missing"}), 401
-    
-    # Validate the API key and get the user ID
-    # user_id = get_user_by_api_key(api_key)
-    
-    # if not user_id:
-    #     return jsonify({"error": "Invalid API key"}), 401
-    
-    # Now that we have a valid user_id, create a run
-    # run_id = create_run_on_user(user_id, "video")
-    
     body, err = get_json_body()
     if err:
         return err
@@ -106,10 +81,8 @@ def render_video():
 
     video_storage_file_name = f"video-{user_id}-{project_name}-{iteration}"
 
-    # Determine frame size and width based on aspect ratio
     frame_size, frame_width = get_frame_config(aspect_ratio)
 
-    # Modify the Manim script to include configuration settings
     modified_code = f"""
 from manim import *
 from math import *
@@ -119,16 +92,12 @@ config.frame_width = {frame_width}
 {code}
     """
 
-    # Create a unique file name
     file_name = f"scene_{os.urandom(2).hex()}.py"
-    
-    # Adjust the path to point to /api/public/
-    api_dir = os.path.dirname(os.path.dirname(__file__))  # Go up one level from routes
+    api_dir = os.path.dirname(os.path.dirname(__file__))
     public_dir = os.path.join(api_dir, "public")
-    os.makedirs(public_dir, exist_ok=True)  # Ensure the public directory exists
+    os.makedirs(public_dir, exist_ok=True)
     file_path = os.path.join(public_dir, file_name)
 
-    # Write the code to the file
     with open(file_path, "w") as f:
         f.write(modified_code)
 
@@ -136,7 +105,7 @@ config.frame_width = {frame_width}
         try:
             command_list = [
                 "manim",
-                file_path,  # Use the full path to the file
+                file_path,
                 file_class,
                 "--format=mp4",
                 "--media_dir",
@@ -348,22 +317,17 @@ def export_video():
     title_slug = request.json.get("titleSlug")
     local_filenames = []
 
-    # Download each scene
     for scene in scenes:
         video_url = scene["videoUrl"]
-        object_name = video_url.split("/")[-1]
         local_filename = download_video(video_url)
         local_filenames.append(local_filename)
 
-    # Generate a unique filename with UNIX timestamp
     timestamp = int(time.time())
-    # Sanitize title_slug to prevent command injection
     safe_slug = re.sub(r'[^a-zA-Z0-9_-]', '', title_slug or 'untitled')
     merged_filename = os.path.join(
         os.getcwd(), f"exported-scene-{safe_slug}-{timestamp}.mp4"
     )
 
-    # Build ffmpeg command as a list to avoid shell injection
     command_list = ["ffmpeg"]
     for filename in local_filenames:
         command_list.extend(["-i", filename])
@@ -374,7 +338,6 @@ def export_video():
     ])
 
     try:
-        # Execute the ffmpeg command safely (no shell=True)
         subprocess.run(command_list, check=True)
         print("Videos merged successfully.")
         print(f"merged_filename: {merged_filename}")

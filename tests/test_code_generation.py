@@ -1,22 +1,8 @@
 """Tests for /v1/code/generation route (OpenAI, Anthropic, Gemini engines)."""
 
-import sys
-import types
 from unittest import mock
 
 import pytest
-
-# Stub heavy optional deps before any app imports
-_fake_litellm = types.ModuleType("litellm")
-_fake_exceptions = types.ModuleType("litellm.exceptions")
-_fake_exceptions.AuthenticationError = Exception
-_fake_exceptions.NotFoundError = Exception
-_fake_exceptions.RateLimitError = Exception
-_fake_exceptions.Timeout = Exception
-_fake_litellm.exceptions = _fake_exceptions
-_fake_litellm.completion = mock.MagicMock()
-sys.modules.setdefault("litellm", _fake_litellm)
-sys.modules.setdefault("litellm.exceptions", _fake_exceptions)
 
 
 def _make_openai_response(content):
@@ -35,19 +21,6 @@ def _make_anthropic_response(content):
     resp = mock.MagicMock()
     resp.content = [block]
     return resp
-
-
-@pytest.fixture
-def app():
-    sys.path.insert(0, ".")
-    from api.run import app
-    app.config["TESTING"] = True
-    return app
-
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
 
 
 class TestCodeGenerationInvalidInput:

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 import anthropic
 import os
-import json
+import shutil
 import subprocess
 import uuid
 from openai import OpenAI
@@ -15,7 +15,6 @@ video_generation_bp = Blueprint('video_generation', __name__)
 
 
 def generate_manim_code(prompt, engine="openai", model="gpt-4o"):
-    """Generate Manim code from a text prompt"""
     if model.startswith("claude-"):
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         messages = [{"role": "user", "content": prompt}]
@@ -56,20 +55,6 @@ def generate_manim_code(prompt, engine="openai", model="gpt-4o"):
 
 @video_generation_bp.route("/v1/video/generation", methods=["POST"])
 def generate_video():
-    """
-    Generate a video from a text prompt.
-
-    Request Body:
-    {
-        "prompt": "Create a Manim animation that shows a square transforming into a circle",
-        "engine": "openai",  // Optional, defaults to "openai"
-        "model": "gpt-4o",  // Optional, defaults to "gpt-4o"
-        "aspect_ratio": "16:9",  // Optional, defaults to "16:9"
-        "user_id": "user-123",  // Optional
-        "project_name": "my-project",  // Optional
-        "iteration": 1  // Optional
-    }
-    """
     body, err = get_json_body()
     if err:
         return err
@@ -89,20 +74,12 @@ def generate_video():
         project_name = body.get("project_name", "untitled")
         iteration = body.get("iteration", 1)
 
-        print(f"Generating video from prompt: {prompt}")
-
-        # Step 1: Generate Manim code
-        print(f"Step 1: Generating Manim code using {engine}/{model}")
         try:
             code = generate_manim_code(prompt, engine, model)
-            print(f"Code generation successful")
         except Exception:
             return internal_error("Code generation failed", code="code_generation_failed")
 
-        # Step 2: Render the video
-        print(f"Step 2: Rendering video")
         try:
-            # Prepare the code with frame configuration
             frame_size, frame_width = get_frame_config(aspect_ratio)
             modified_code = f"""
 from manim import *
@@ -113,7 +90,6 @@ config.frame_width = {frame_width}
 {code}
             """
 
-            # Create a temporary file for the code
             file_name = f"scene_{os.urandom(2).hex()}.py"
             api_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             public_dir = os.path.join(api_dir, "public")
@@ -123,7 +99,6 @@ config.frame_width = {frame_width}
             with open(file_path, "w") as f:
                 f.write(modified_code)
 
-            # Run Manim to render the video
             command = [
                 "manim",
                 file_path,
@@ -145,7 +120,6 @@ config.frame_width = {frame_width}
             if result.returncode != 0:
                 return internal_error("Manim rendering failed", code="render_failed")
 
-            # Find the generated video file
             video_file_path = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)),
                 "GenScene.mp4"
@@ -154,19 +128,14 @@ config.frame_width = {frame_width}
             if not os.path.exists(video_file_path):
                 return internal_error("Video file not found after rendering", code="video_not_found")
 
-            # Move video to public folder
             video_storage_file_name = f"video-{user_id}-{project_name}-{iteration}"
             new_file_name = f"{video_storage_file_name}.mp4"
             new_file_path = os.path.join(public_dir, new_file_name)
 
-            import shutil
             shutil.move(video_file_path, new_file_path)
 
-            # Generate the video URL
             base_url = request.host_url.rstrip('/') if request.host_url else os.getenv("BASE_URL", "http://127.0.0.1:8080")
             video_url = f"{base_url}/public/{new_file_name}"
-
-            print(f"Video generated successfully: {video_url}")
 
             return jsonify({
                 "message": "Video generated successfully",
@@ -179,7 +148,6 @@ config.frame_width = {frame_width}
         except Exception:
             return internal_error("Video rendering failed", code="render_error")
         finally:
-            # Cleanup temporary files
             try:
                 if os.path.exists(file_path):
                     os.remove(file_path)
