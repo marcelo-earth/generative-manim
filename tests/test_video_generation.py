@@ -1,39 +1,11 @@
 """Tests for /v1/video/generation route."""
 
-import json
 import os
-import sys
-import types
 from unittest import mock
 
 import pytest
 
-# Stub litellm before app imports
-_fake_litellm = types.ModuleType("litellm")
-_fake_exceptions = types.ModuleType("litellm.exceptions")
-_fake_exceptions.AuthenticationError = Exception
-_fake_exceptions.NotFoundError = Exception
-_fake_exceptions.RateLimitError = Exception
-_fake_exceptions.Timeout = Exception
-_fake_litellm.exceptions = _fake_exceptions
-_fake_litellm.completion = mock.MagicMock()
-sys.modules.setdefault("litellm", _fake_litellm)
-sys.modules.setdefault("litellm.exceptions", _fake_exceptions)
-
 VALID_MANIM_CODE = "from manim import *\nclass GenScene(Scene):\n    def construct(self): pass"
-
-
-@pytest.fixture
-def app():
-    sys.path.insert(0, ".")
-    from api.run import app
-    app.config["TESTING"] = True
-    return app
-
-
-@pytest.fixture
-def client(app):
-    return app.test_client()
 
 
 @pytest.fixture
