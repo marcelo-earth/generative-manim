@@ -717,7 +717,6 @@ Rules:
                             return
 
                 if function_call_data:
-                    # Add the function call to messages
                     messages.append({
                         "role": "assistant",
                         "content": None,
@@ -726,22 +725,6 @@ Rules:
                             "arguments": function_call_data
                         }
                     })
-
-                    # Yield the whole object back to the frontend
-                    function_call_obj = json.dumps({
-                        "role": "assistant",
-                        "content": None,
-                        "function_call": {
-                            "name": function_name,
-                            "arguments": function_call_data
-                        }
-                    })
-                    if is_for_platform:
-                        pass
-                        # text_obj = json.dumps({"type": "text", "text": function_call_obj})
-                        # yield f'{text_obj}\n'
-                    else:
-                        pass
 
                     if function_name == "get_preview":
                         args = json.loads(function_call_data)
@@ -754,7 +737,6 @@ Rules:
                         }
                         messages.append(function_response)
 
-                        # Yield the function response back to the frontend
                         if is_for_platform:
                             function_result_obj = json.dumps({
                                 "type": "function_result",
@@ -762,12 +744,8 @@ Rules:
                                 "function_call": {"name": function_name}
                             })
                             yield f'{function_result_obj}\n'
-                        else:
-                            pass
 
-                        # Only create and send image_message if there are images
                         if result_json.get("images"):
-                            # Create a new message with the images
                             image_message = {
                                 "role": "user",
                                 "content": [
@@ -782,10 +760,7 @@ Rules:
                                 ]
                             }
 
-                            # Calculate how many new images we can add
                             available_slots = manage_conversation_images(messages, len(result_json["images"]), engine)
-                            
-                            # Select frames based on available slots
                             total_frames = len(result_json["images"])
                             frame_interval = max(1, total_frames // available_slots)
                             selected_frames = result_json["images"][::frame_interval][:available_slots]
@@ -799,23 +774,15 @@ Rules:
                                 })
                             messages.append(image_message)
 
-                            # Yield the image message back to the frontend
-                            image_message_obj = json.dumps(image_message)
-                            if is_for_platform:
-                                pass
-                                # text_obj = json.dumps({"type": "text", "text": image_message_obj})
-                                # yield f'{text_obj}\n'
-                            else:
-                                yield image_message_obj
+                            if not is_for_platform:
+                                yield json.dumps(image_message)
 
-                        # Trigger a new response from the assistant
-                        continue  # This will start a new iteration of the while loop
+                        continue
                     else:
-                        break  # Exit the loop if it's not a get_preview function call
+                        break
                 else:
-                    break  # Exit the loop if there's no function call
+                    break
 
-            # Final message when there are no more function calls
             final_message = "\n"
             if is_for_platform:
                 text_obj = json.dumps({"type": "text", "text": final_message})
