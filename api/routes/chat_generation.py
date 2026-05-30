@@ -12,7 +12,6 @@ import base64
 from api.prompts.manimDocs import manimDocs
 from api.llm_providers import generate_gemini_content_stream
 from api.validation import get_json_body
-from azure.storage.blob import BlobServiceClient
 from PIL import Image
 import io
 import time
@@ -22,6 +21,31 @@ import uuid
 chat_generation_bp = Blueprint("chat_generation", __name__)
 
 FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
+
+_ENGINE_DEFAULTS = {
+    "openai": "gpt-4o",
+    "anthropic": "claude-sonnet-4-6",
+    "deepseek": "r1",
+    "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
+    "litellm": "openai/gpt-4o",
+    "gemini": "gemini-2.5-flash",
+}
+
+_VALID_MODELS = {
+    "openai": ["gpt-4o", "o1-mini"],
+    "anthropic": [
+        "claude-sonnet-4-6",
+        "claude-opus-4-7",
+        "claude-haiku-4-5-20251001",
+        "claude-3-5-sonnet-20241022",
+        "claude-3-5-haiku-20241022",
+        "claude-35-sonnet",
+    ],
+    "deepseek": ["r1"],
+    "featherless": None,
+    "litellm": None,
+    "gemini": None,
+}
 
 
 animo_functions = {
@@ -69,55 +93,39 @@ animo_functions = {
 }
 
 def count_images_in_conversation(messages):
-    """
-    Count the total number of images in the conversation.
-    Returns a tuple of (total_count, list of image messages indices)
-    """
     total_images = 0
     image_message_indices = []
-    
     for i, message in enumerate(messages):
         if message.get("role") == "user" and isinstance(message.get("content"), list):
-            image_count = sum(1 for content in message["content"] if isinstance(content, dict) and content.get("type") == "image_url")
+            image_count = sum(
+                1 for content in message["content"]
+                if isinstance(content, dict) and content.get("type") == "image_url"
+            )
             if image_count > 0:
                 total_images += image_count
                 image_message_indices.append(i)
-    
     return total_images, image_message_indices
 
 def manage_conversation_images(messages, new_images_count, engine):
-    """
-    Manage the conversation to ensure we don't exceed image limits.
-    For OpenAI, we maintain only the last 50 images.
-    Returns the maximum number of new images we can add.
-    """
     if engine != "openai":
-        return len(new_images_count)  # No limit for other engines
-        
+        return new_images_count
+
     MAX_IMAGES = 50
     current_total, image_indices = count_images_in_conversation(messages)
-    
-    # If we already have too many images, remove old image messages
+
     while current_total > 0 and current_total + new_images_count > MAX_IMAGES and image_indices:
         oldest_image_idx = image_indices[0]
         removed_message = messages.pop(oldest_image_idx)
-        # Recount images in the removed message
-        removed_images = sum(1 for content in removed_message["content"] 
-                           if isinstance(content, dict) and content.get("type") == "image_url")
+        removed_images = sum(1 for content in removed_message["content"]
+                             if isinstance(content, dict) and content.get("type") == "image_url")
         current_total -= removed_images
-        # Update indices after removal
-        image_indices = [idx - 1 for idx in image_indices[1:]]  # Adjust remaining indices
-    
-    # Return how many new images we can add
+        image_indices = [idx - 1 for idx in image_indices[1:]]
+
     return min(MAX_IMAGES - current_total, new_images_count)
 
 
 def _generate_manim_preview(code: str, class_name: str) -> str:
-    """Run Manim in PNG mode and return a JSON string with base64-encoded frames.
-
-    Shared by both the Anthropic and OpenAI engine branches.
-    """
-    print("Generating preview")
+    """Run Manim in PNG mode and return a JSON string with base64-encoded frames."""
     current_dir = os.path.dirname(os.path.abspath(__file__))
     api_dir = os.path.dirname(current_dir)
 
@@ -136,7 +144,6 @@ def _generate_manim_preview(code: str, class_name: str) -> str:
     )
     try:
         result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
-        print(f"Result: {result}")
 
         previews_dir = os.path.join(api_dir, "public", "previews")
         os.makedirs(previews_dir, exist_ok=True)
@@ -167,18 +174,15 @@ def _generate_manim_preview(code: str, class_name: str) -> str:
                 "images": image_list,
             })
         else:
-            print(f"No PNG files found in: {temp_dir}")
             return json.dumps({"error": f"No preview files generated at: {temp_dir}", "images": []})
 
     except subprocess.CalledProcessError as e:
         error_output = e.stdout + e.stderr
-        print(f"Error running Manim command: {e}\n{error_output}")
         return json.dumps({
             "error": f"ERROR. Error generating preview, please think on what could be the problem, and use `get_preview` to run the code again: {e}\nCommand output:\n{error_output}",
             "images": [],
         })
     except Exception as e:
-        print(f"Unexpected error: {e}")
         return json.dumps({"error": f"Unexpected error: {e}", "images": []})
 
 
@@ -196,18 +200,9 @@ def _streaming_response(generate_fn, is_for_platform: bool):
 
 @chat_generation_bp.route("/v1/chat/generation", methods=["POST"])
 def generate_code_chat():
-    """
-    This endpoint generates code for animations using OpenAI or Anthropic.
-    It supports both OpenAI and Anthropic models and returns a stream of content.
-    
-    When calling this endpoint, enable `is_for_platform` to interact with the platform 'Animo'.
-    """
-    print("Received request for /v1/chat/generation")
-
     data, err = get_json_body()
     if err:
         return err
-    print(f"Request data: {json.dumps(data, indent=2)}")
 
     messages = data.get("messages", [])
     prompt = data.get("prompt")
@@ -216,55 +211,23 @@ def generate_code_chat():
     scenes = data.get("scenes", [])
     project_title = data.get("projectTitle", "")
     engine = data.get("engine", "openai")
-    model = data.get("model", None)  # Optional model parameter
+    model = data.get("model", None)
     selected_scenes = data.get("selectedScenes", [])
     is_for_platform = data.get("isForPlatform", False)
 
-    # Define default models for each engine
-    ENGINE_DEFAULTS = {
-        "openai": "gpt-4o",
-        "anthropic": "claude-sonnet-4-6",
-        "deepseek": "r1",
-        "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
-        "litellm": "openai/gpt-4o",
-        "gemini": "gemini-2.5-flash",
-    }
+    if engine not in _ENGINE_DEFAULTS:
+        return jsonify({"error": f"Invalid engine. Must be one of: {', '.join(_ENGINE_DEFAULTS.keys())}"}), 400
 
-    # Validate and set the model based on engine
-    if engine not in ENGINE_DEFAULTS:
-        return jsonify({"error": f"Invalid engine. Must be one of: {', '.join(ENGINE_DEFAULTS.keys())}"}), 400
-
-    # If no model specified, use the default for the engine
     if not model:
-        model = ENGINE_DEFAULTS[engine]
+        model = _ENGINE_DEFAULTS[engine]
 
-    # Validate model based on engine
-    VALID_MODELS = {
-        "openai": ["gpt-4o", "o1-mini"],
-        "anthropic": [
-            "claude-sonnet-4-6",
-            "claude-opus-4-7",
-            "claude-haiku-4-5-20251001",
-            "claude-3-5-sonnet-20241022",
-            "claude-3-5-haiku-20241022",
-            "claude-35-sonnet",
-        ],
-        "deepseek": ["r1"],
-        "featherless": None,
-        "litellm": None,
-        "gemini": None,
-    }
-
-    if VALID_MODELS[engine] is not None and model not in VALID_MODELS[engine]:
+    if _VALID_MODELS[engine] is not None and model not in _VALID_MODELS[engine]:
         return jsonify({
-            "error": f"Invalid model '{model}' for engine '{engine}'. Valid models are: {', '.join(VALID_MODELS[engine])}"
+            "error": f"Invalid model '{model}' for engine '{engine}'. Valid models are: {', '.join(_VALID_MODELS[engine])}"
         }), 400
 
     if not messages and prompt:
         messages = [{"role": "user", "content": prompt}]
-    
-    print("messages")
-    print(messages)
 
     general_system_prompt = """You are an assistant that creates animations with Manim. Manim is a mathematical animation engine that is used to create videos programmatically. You are running on Animo (www.animo.video), a tool to create videos with Manim.
 
@@ -502,7 +465,6 @@ Rules:
                     else:
                         yield content
             except Exception as e:
-                print(f"Streaming error: {e}")
                 safe_message = f"{type(e).__name__}: generation failed"
                 if is_for_platform:
                     yield f"{json.dumps({'type': 'error', 'text': safe_message})}\n"
@@ -549,7 +511,6 @@ Rules:
                 message["content"] = content
             return message
 
-        # Extract system message and remove it from the messages list
         system_message = next(
             (msg["content"] for msg in messages if msg["role"] == "system"), None
         )
@@ -563,24 +524,6 @@ Rules:
             try:
                 messages = anthropic_messages
                 while True:
-                    print("\n=== Starting new message stream ===")
-                    print("=== Current message history ===")
-                    for idx, msg in enumerate(messages):
-                        print(f"\nMessage {idx}:")
-                        print(f"Role: {msg['role']}")
-                        if isinstance(msg['content'], list):
-                            print("Content (list):")
-                            for content_item in msg['content']:
-                                if isinstance(content_item, dict):
-                                    print(f"  Type: {content_item.get('type', 'unknown')}")
-                                    if content_item['type'] == 'text':
-                                        print(f"  Text: {content_item['text']}")
-                                    elif content_item['type'] == 'tool_result':
-                                        print(f"  Tool use ID: {content_item.get('tool_use_id')}")
-                        else:
-                            print(f"Content: {msg['content']}")
-                    print("\n=== End of message history ===")
-                    
                     stream = client.messages.create(
                         model=model,
                         messages=messages,
@@ -591,37 +534,29 @@ Rules:
                     )
                     
                     current_message = {"role": "assistant", "content": []}
-                    current_text = ""  # To accumulate text content
+                    current_text = ""
                     json_buffer = ""
                     should_continue = False
                     tool_use_id = None
                     complete_json = ""
                     
                     for chunk in stream:
-                        print(f"\nChunk type: {chunk.type}")
-                        print(f"Chunk content: {chunk}")
-                        
                         if chunk.type == "content_block_start":
                             if hasattr(chunk.content_block, 'type'):
                                 if chunk.content_block.type == 'tool_use':
                                     tool_use_id = chunk.content_block.id
-                                    print(f"Captured tool_use_id: {tool_use_id}")
-                                    
-                                    # If we have accumulated text, add it first
                                     if current_text:
                                         current_message["content"].append({
                                             "type": "text",
                                             "text": current_text
                                         })
                                         current_text = ""
-                                    
-                                    # Add tool use block
                                     tool_input = {}
                                     if complete_json:
                                         try:
                                             tool_input = json.loads(complete_json)
                                         except json.JSONDecodeError:
-                                            print("Failed to parse tool input JSON")
+                                            pass
                                     
                                     current_message["content"].append({
                                         "type": "tool_use",
@@ -634,8 +569,7 @@ Rules:
                             if hasattr(chunk.delta, 'text'):
                                 content = chunk.delta.text
                                 if content:
-                                    print(f"Text content: {content}")
-                                    current_text += content  # Accumulate text
+                                    current_text += content
                                     if is_for_platform:
                                         for char in content:
                                             escaped_char = repr(char)[1:-1]
@@ -645,50 +579,33 @@ Rules:
                                 
                             elif hasattr(chunk.delta, 'partial_json'):
                                 complete_json += chunk.delta.partial_json
-                                print(f"Accumulated complete JSON: {complete_json}")
 
                         elif chunk.type == "content_block_stop":
                             if complete_json:
                                 try:
-                                    print("\n=== Processing tool call ===")
                                     tool_call = json.loads(complete_json)
-                                    print(f"Tool call data: {json.dumps(tool_call, indent=2)}")
-                                    print(f"Using tool_use_id: {tool_use_id}")
-                                    
                                     preview_result = get_preview(
                                         code=tool_call.get('code', ''),
                                         class_name=tool_call.get('class_name', '')
                                     )
-                                    
                                     try:
                                         preview_data = json.loads(preview_result)
-                                        print("\nParsed preview data keys:", preview_data.keys())
-                                        
-                                        # Just use the middle frame for testing
                                         middle_frame = preview_data['images'][len(preview_data['images'])//2]
                                         base64_data = middle_frame['base64']
-                                        
-                                        # Debug the base64 data
-                                        print(f"\nBase64 data length: {len(base64_data)}")
-                                        print(f"Base64 data starts with: {base64_data[:50]}")
-                                        print(f"Base64 data ends with: {base64_data[-50:]}")
-                                        
-                                        # Create simplified content blocks with just one frame
                                         content_blocks = [
                                             {
                                                 "type": "image",
                                                 "source": {
                                                     "type": "base64",
                                                     "media_type": "image/png",
-                                                    "data": base64_data  # Use raw base64 without prefix
+                                                    "data": base64_data,
                                                 }
                                             },
                                             {
                                                 "type": "text",
-                                                "text": f"\nPreview frame from the animation.\n"
+                                                "text": "\nPreview frame from the animation.\n"
                                             }
                                         ]
-                                        
                                         tool_response = {
                                             "role": "user",
                                             "content": [{
@@ -697,11 +614,6 @@ Rules:
                                                 "content": content_blocks
                                             }]
                                         }
-                                        
-                                        print(f"\nTool response structure:")
-                                        print(json.dumps(tool_response, indent=2))
-                                        
-                                        # Add the assistant's message with tool use before adding tool result
                                         messages.append(current_message)
                                         messages.append(tool_response)
                                         should_continue = True
@@ -716,17 +628,11 @@ Rules:
                                             yield "\n[Preview frame]\n"
                                         
                                     except json.JSONDecodeError:
-                                        print("Failed to parse preview result as JSON")
-                                        print("Raw preview result:", preview_result)
                                         continue
-                                
-                                except Exception as e:
-                                    print(f"Error processing tool call: {str(e)}")
+                                except Exception:
                                     continue
-                        
+
                         elif chunk.type == "message_stop":
-                            print("\n=== Message stream ended ===")
-                            # Add any remaining text content
                             if current_text:
                                 if not current_message["content"]:
                                     current_message["content"] = []
@@ -744,7 +650,6 @@ Rules:
                         break
 
             except Exception as e:
-                print(f"\n=== Error occurred ===\nError details: {str(e)}")
                 error_message = f'0:"{str(e)}"\n' if is_for_platform else f"Error: {str(e)}"
                 yield error_message
 
@@ -800,20 +705,16 @@ Rules:
                                         })
                                         yield f'{partial_call_obj}\n'
                         
-                        # If we get here, the stream completed successfully
                         break
                     
                     except APIError as e:
                         if attempt < max_retries - 1:
-                            print(f"APIError occurred: {str(e)}. Retrying in {retry_delay} seconds...")
                             time.sleep(retry_delay)
                         else:
-                            print(f"Max retries reached. APIError: {str(e)}")
                             yield json.dumps({"error": "Max retries reached due to API errors"})
-                            return  # Exit the generator
+                            return
 
                 if function_call_data:
-                    # Add the function call to messages
                     messages.append({
                         "role": "assistant",
                         "content": None,
@@ -823,25 +724,7 @@ Rules:
                         }
                     })
 
-                    # Yield the whole object back to the frontend
-                    function_call_obj = json.dumps({
-                        "role": "assistant",
-                        "content": None,
-                        "function_call": {
-                            "name": function_name,
-                            "arguments": function_call_data
-                        }
-                    })
-                    if is_for_platform:
-                        pass
-                        # text_obj = json.dumps({"type": "text", "text": function_call_obj})
-                        # yield f'{text_obj}\n'
-                    else:
-                        pass
-
-                    # Actually call get_preview
                     if function_name == "get_preview":
-                        print(f"Calling get_preview with data: {function_call_data}")
                         args = json.loads(function_call_data)
                         result = get_preview(args['code'], args['class_name'])
                         result_json = json.loads(result)
@@ -852,7 +735,6 @@ Rules:
                         }
                         messages.append(function_response)
 
-                        # Yield the function response back to the frontend
                         if is_for_platform:
                             function_result_obj = json.dumps({
                                 "type": "function_result",
@@ -860,12 +742,8 @@ Rules:
                                 "function_call": {"name": function_name}
                             })
                             yield f'{function_result_obj}\n'
-                        else:
-                            pass
 
-                        # Only create and send image_message if there are images
                         if result_json.get("images"):
-                            # Create a new message with the images
                             image_message = {
                                 "role": "user",
                                 "content": [
@@ -880,10 +758,7 @@ Rules:
                                 ]
                             }
 
-                            # Calculate how many new images we can add
                             available_slots = manage_conversation_images(messages, len(result_json["images"]), engine)
-                            
-                            # Select frames based on available slots
                             total_frames = len(result_json["images"])
                             frame_interval = max(1, total_frames // available_slots)
                             selected_frames = result_json["images"][::frame_interval][:available_slots]
@@ -897,23 +772,15 @@ Rules:
                                 })
                             messages.append(image_message)
 
-                            # Yield the image message back to the frontend
-                            image_message_obj = json.dumps(image_message)
-                            if is_for_platform:
-                                pass
-                                # text_obj = json.dumps({"type": "text", "text": image_message_obj})
-                                # yield f'{text_obj}\n'
-                            else:
-                                yield image_message_obj
+                            if not is_for_platform:
+                                yield json.dumps(image_message)
 
-                        # Trigger a new response from the assistant
-                        continue  # This will start a new iteration of the while loop
+                        continue
                     else:
-                        break  # Exit the loop if it's not a get_preview function call
+                        break
                 else:
-                    break  # Exit the loop if there's no function call
+                    break
 
-            # Final message when there are no more function calls
             final_message = "\n"
             if is_for_platform:
                 text_obj = json.dumps({"type": "text", "text": final_message})
@@ -921,5 +788,4 @@ Rules:
             else:
                 yield final_message
 
-        print("Generating response")
         return _streaming_response(generate, is_for_platform)
