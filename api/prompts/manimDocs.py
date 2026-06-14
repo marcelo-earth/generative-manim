@@ -1,4 +1,4 @@
-manimDocs = """
+manimDocs = r"""
 ## Manim Index Documentation
 
 This reference list details modules, functions, and variables included in Manim, describing what they are and what they do.

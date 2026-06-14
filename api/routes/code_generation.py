@@ -1,11 +1,13 @@
-from flask import Blueprint, jsonify, request
-import anthropic
 import os
+
+import anthropic
+from flask import Blueprint, jsonify, request
 from openai import OpenAI
+
+from api.errors import bad_request, gateway_timeout, internal_error, not_found, rate_limited, unauthorized
 from api.llm_providers import generate_gemini_content
 from api.prompts.system import MANIM_CODE_GENERATION_PROMPT
 from api.validation import get_json_body
-from api.errors import bad_request, unauthorized, not_found, rate_limited, gateway_timeout, internal_error
 
 code_generation_bp = Blueprint('code_generation', __name__)
 

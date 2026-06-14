@@ -1,15 +1,17 @@
 import os
+
+from dotenv import load_dotenv
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from dotenv import load_dotenv
-from .routes.video_rendering import video_rendering_bp
-from .routes.code_generation import code_generation_bp
+
 from .routes.chat_generation import chat_generation_bp
-from .routes.video_generation import video_generation_bp
+from .routes.code_generation import code_generation_bp
 from .routes.health import health_bp
 from .routes.models import models_bp
+from .routes.video_generation import video_generation_bp
+from .routes.video_rendering import video_rendering_bp
 
 _DEFAULT_LIMITS = ["60 per minute", "500 per hour"]
 

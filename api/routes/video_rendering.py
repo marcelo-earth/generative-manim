@@ -1,16 +1,18 @@
-from flask import Blueprint, jsonify, request, Response
-import subprocess
+import json
 import os
 import re
-import json
-import sys
-import traceback
-from azure.storage.blob import BlobServiceClient
 import shutil
-from typing import Union
-import uuid
+import subprocess
+import sys
 import time
+import traceback
+import uuid
+from typing import Union
+
 import requests
+from azure.storage.blob import BlobServiceClient
+from flask import Blueprint, Response, jsonify, request
+
 from api.validation import get_json_body, require_string, validate_aspect_ratio, validate_boolean
 from api.video_utils import get_frame_config
 

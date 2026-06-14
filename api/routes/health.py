@@ -1,6 +1,7 @@
 """Health check endpoint for the Generative Manim API."""
 
 import os
+
 from flask import Blueprint, jsonify
 
 health_bp = Blueprint("health", __name__)

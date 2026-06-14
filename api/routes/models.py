@@ -1,6 +1,7 @@
 """List available models grouped by engine."""
 
 import os
+
 from flask import Blueprint, jsonify
 
 models_bp = Blueprint("models", __name__)

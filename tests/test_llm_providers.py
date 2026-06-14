@@ -13,11 +13,11 @@ _fake_google.genai = _fake_genai
 sys.modules.setdefault("google", _fake_google)
 sys.modules.setdefault("google.genai", _fake_genai)
 
-from api.llm_providers import (
+from api.llm_providers import (  # noqa: E402
+    GEMINI_MODEL_ALIASES,
+    generate_gemini_content,
     normalize_gemini_model,
     strip_markdown_code_fence,
-    generate_gemini_content,
-    GEMINI_MODEL_ALIASES,
 )
 
 
