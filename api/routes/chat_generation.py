@@ -1,22 +1,23 @@
-from flask import Blueprint, jsonify, request, Response, stream_with_context
-import anthropic
-import openai
-import os
+import base64
+import io
 import json
-import subprocess
-import shutil
-import string
+import os
 import random
 import re
-import base64
-from api.prompts.manimDocs import manimDocs
-from api.llm_providers import generate_gemini_content_stream
-from api.validation import get_json_body
-from PIL import Image
-import io
+import shutil
+import string
+import subprocess
 import time
+
+import anthropic
+import openai
+from flask import Blueprint, Response, jsonify, request, stream_with_context
 from openai import APIError
-import uuid
+from PIL import Image
+
+from api.llm_providers import generate_gemini_content_stream
+from api.prompts.manimDocs import manimDocs
+from api.validation import get_json_body
 
 chat_generation_bp = Blueprint("chat_generation", __name__)
 
@@ -143,7 +144,7 @@ def _generate_manim_preview(code: str, class_name: str) -> str:
         f"--format=png --media_dir {temp_dir} --custom_folders -pql --disable_caching"
     )
     try:
-        result = subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
+        subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
 
         previews_dir = os.path.join(api_dir, "public", "previews")
         os.makedirs(previews_dir, exist_ok=True)
@@ -206,13 +207,8 @@ def generate_code_chat():
 
     messages = data.get("messages", [])
     prompt = data.get("prompt")
-    global_prompt = data.get("globalPrompt", "")
-    user_id = data.get("userId") or f"user-{uuid.uuid4()}"
-    scenes = data.get("scenes", [])
-    project_title = data.get("projectTitle", "")
     engine = data.get("engine", "openai")
     model = data.get("model", None)
-    selected_scenes = data.get("selectedScenes", [])
     is_for_platform = data.get("isForPlatform", False)
 
     if engine not in _ENGINE_DEFAULTS:
@@ -229,7 +225,7 @@ def generate_code_chat():
     if not messages and prompt:
         messages = [{"role": "user", "content": prompt}]
 
-    general_system_prompt = """You are an assistant that creates animations with Manim. Manim is a mathematical animation engine that is used to create videos programmatically. You are running on Animo (www.animo.video), a tool to create videos with Manim.
+    general_system_prompt = r"""You are an assistant that creates animations with Manim. Manim is a mathematical animation engine that is used to create videos programmatically. You are running on Animo (www.animo.video), a tool to create videos with Manim.
 
 # What the user can do?
 
@@ -535,7 +531,6 @@ Rules:
                     
                     current_message = {"role": "assistant", "content": []}
                     current_text = ""
-                    json_buffer = ""
                     should_continue = False
                     tool_use_id = None
                     complete_json = ""
@@ -623,7 +618,7 @@ Rules:
                                             for char in preview_text:
                                                 escaped_char = repr(char)[1:-1]
                                                 yield f'0:"{escaped_char}"\n'
-                                            yield f'0:"[IMAGE: Preview frame]"\n'
+                                            yield '0:"[IMAGE: Preview frame]"\n'
                                         else:
                                             yield "\n[Preview frame]\n"
                                         
@@ -707,7 +702,7 @@ Rules:
                         
                         break
                     
-                    except APIError as e:
+                    except APIError:
                         if attempt < max_retries - 1:
                             time.sleep(retry_delay)
                         else:

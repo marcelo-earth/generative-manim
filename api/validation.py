@@ -2,7 +2,6 @@
 
 from flask import jsonify, request
 
-
 VALID_ASPECT_RATIOS = {"16:9", "9:16", "1:1"}
 
 
