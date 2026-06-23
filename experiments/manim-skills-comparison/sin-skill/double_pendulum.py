@@ -71,9 +71,9 @@ class DoublePendulumChaos(Scene):
             all_pos.append(simulate(cfg["th1"], cfg["th2"], N_STEPS, DT, L1, L2))
 
         # --- title ---
-        title = Text("Péndulo doble", font_size=36, color=WHITE).to_edge(UP)
+        title = Text("Double Pendulum", font_size=36, color=WHITE).to_edge(UP)
         subtitle = Text(
-            "Delta theta = 0.5° de diferencia",
+            "Delta theta = 0.5 deg apart",
             font_size=22,
             color=GRAY_B,
         ).next_to(title, DOWN, buff=0.15)
@@ -156,7 +156,7 @@ class DoublePendulumChaos(Scene):
 
         # --- end card ---
         end_text = Text(
-            "Mismas condiciones iniciales,\ntrayectorias completamente distintas.",
+            "Same initial conditions,\ncompletely different trajectories.",
             font_size=24,
             color=WHITE,
             line_spacing=1.3,

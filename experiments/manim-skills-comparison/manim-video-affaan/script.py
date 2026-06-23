@@ -69,9 +69,9 @@ def attach_updater(b2, pos, tracker, r1, r2, b1):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Scene 1 — Prove: they start identical
+# Scene 1: Prove they start identical
 # Show both pendulums superimposed at the exact same position, then label the
-# 0.5° gap so the viewer can see how small the difference actually is.
+# 0.5 deg gap so the viewer can see how small the difference actually is.
 # ─────────────────────────────────────────────────────────────────────────────
 
 class Scene1_SameStart(Scene):
@@ -84,8 +84,8 @@ class Scene1_SameStart(Scene):
         rA1, rA2, bA1, bA2 = make_pend(posA, BLUE_PEND)
         rB1, rB2, bB1, bB2 = make_pend(posB, RED_PEND)
 
-        # Angle arc showing the 0.5° gap between the two first arms
-        start_angle = np.radians(90) - TH0                # 90° - 120° = -30° (from East)
+        # Angle arc showing the 0.5 deg gap between the two first arms
+        start_angle = np.radians(90) - TH0                # 90 - 120 = -30 deg (from East)
         delta_angle = np.radians(0.5)
         arc = Arc(
             radius=0.9,
@@ -99,7 +99,7 @@ class Scene1_SameStart(Scene):
             .next_to(arc, LEFT, buff=0.1)
 
         thesis = Text(
-            "Mismo inicio: 0.5° de diferencia",
+            "Same start — 0.5° apart",
             font_size=24, color=WHITE,
         ).to_edge(DOWN, buff=0.6)
 
@@ -111,7 +111,7 @@ class Scene1_SameStart(Scene):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Scene 2 — Prove: they diverge
+# Scene 2: Prove they diverge
 # Run both pendulums together. The first ~10s they track closely; then they
 # explode apart. A vertical "sync" indicator fades out as they separate.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -128,14 +128,14 @@ class Scene2_Divergence(Scene):
         trA = TracedPath(bA2.get_center, stroke_color=BLUE_PEND, stroke_width=1.5, dissipating_time=4)
         trB = TracedPath(bB2.get_center, stroke_color=RED_PEND,  stroke_width=1.5, dissipating_time=4)
 
-        # Sync label (fades as they diverge — driven by angular distance)
-        sync_label = Text("en sincronía", font_size=20, color=GREEN_B).to_edge(DOWN, buff=0.6)
+        # Sync label (fades as they diverge, driven by angular distance)
+        sync_label = Text("in sync", font_size=20, color=GREEN_B).to_edge(DOWN, buff=0.6)
 
         f = ValueTracker(0)
         attach_updater(bA2, posA, f, rA1, rA2, bA1)
         attach_updater(bB2, posB, f, rB1, rB2, bB1)
 
-        # Compute frame index where angular distance first exceeds 45°
+        # Compute frame index where angular distance first exceeds 45 deg
         diverge_frame = N - 1
         for i, (a, _, _, _) in enumerate(posA):
             diff = abs(posA[i][0] - posB[i][0])   # x1 difference as proxy
@@ -166,9 +166,9 @@ class Scene2_Divergence(Scene):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Scene 3 — Prove: different outcomes, same physics
+# Scene 3: Prove different outcomes, same physics
 # Show the two full baked trails side-by-side with a minimal annotation.
-# No rods, no motion — just the evidence.
+# No rods, no motion, just the evidence.
 # ─────────────────────────────────────────────────────────────────────────────
 
 class Scene3_Outcomes(Scene):
@@ -187,11 +187,11 @@ class Scene3_Outcomes(Scene):
         trailB = bake(posB, RED_PEND)
 
         title = Text(
-            "Misma física.\nResultados distintos.",
+            "Same physics.\nDifferent outcomes.",
             font_size=28, color=WHITE, line_spacing=1.4,
         )
         sub = Text(
-            "Determinismo no significa predictibilidad.",
+            "Determinism does not mean predictability.",
             font_size=18, color=GRAY_B,
         ).next_to(title, DOWN, buff=0.35)
 
