@@ -89,7 +89,7 @@ class DoublePendulumNarrative(Scene):
             bob_s.get_center,
             stroke_color=BLUE_B, stroke_width=1.8, dissipating_time=3,
         )
-        label_pred = Text("Predecible", font_size=26, color=GRAY_A).to_edge(DOWN, buff=0.7)
+        label_pred = Text("Predictable", font_size=26, color=GRAY_A).to_edge(DOWN, buff=0.7)
 
         self.play(Create(rod_s), GrowFromCenter(bob_s), run_time=0.5)
         self.add(trace_s)
@@ -219,11 +219,11 @@ class DoublePendulumNarrative(Scene):
         )
 
         end_title = Text(
-            "Dependencia sensible\nde las condiciones iniciales",
+            "Sensitive dependence\non initial conditions",
             font_size=30, color=WHITE, line_spacing=1.3,
         )
         end_sub = Text(
-            "El efecto mariposa",
+            "The Butterfly Effect",
             font_size=22, color=GRAY_B,
         ).next_to(end_title, DOWN, buff=0.4)
 

@@ -65,9 +65,9 @@ class Scene1_SinglePendulum(Scene):
         self.camera.background_color = BLACK
 
         ## Scene1_SinglePendulum.title
-        title = Text("El péndulo predecible", font_size=40, color=WHITE)
+        title = Text("The Predictable Pendulum", font_size=40, color=WHITE)
         title.to_edge(UP, buff=0.4)
-        self.add_subcaption("Un péndulo simple es perfectamente predecible.", duration=3)
+        self.add_subcaption("A single pendulum is perfectly predictable.", duration=3)
         self.play(FadeIn(title), run_time=1.5)
 
         ## Scene1_SinglePendulum.pendulum_setup
@@ -93,7 +93,7 @@ class Scene1_SinglePendulum(Scene):
         self.play(FadeIn(pivot_dot), FadeIn(rod), FadeIn(bob), run_time=0.8)
 
         ## Scene1_SinglePendulum.swing
-        self.add_subcaption("Su movimiento se repite, una y otra vez, para siempre.", duration=4)
+        self.add_subcaption("Its motion repeats, tick by tick, forever.", duration=4)
 
         # Swing back and forth three times
         for target_angle in [PI / 4, -PI / 4, PI / 4, -PI / 4, PI / 4]:
@@ -106,9 +106,9 @@ class Scene1_SinglePendulum(Scene):
         self.wait(0.5)
 
         ## Scene1_SinglePendulum.label
-        periodic_label = Text("Periódico. Predecible.", font_size=28, color=TEAL_A)
+        periodic_label = Text("Periodic. Predictable.", font_size=28, color=TEAL_A)
         periodic_label.next_to(title, DOWN, buff=0.3)
-        self.add_subcaption("Periódico. Predecible. Aburrido.", duration=2)
+        self.add_subcaption("Periodic. Predictable. Boring.", duration=2)
         self.play(Write(periodic_label), run_time=1.2)
         self.wait(1)
 
@@ -123,9 +123,9 @@ class Scene2_DoublePendulumIntro(Scene):
         self.camera.background_color = BLACK
 
         ## Scene2_DoublePendulumIntro.title
-        title = Text("Agreguemos un segundo péndulo", font_size=40, color=WHITE)
+        title = Text("Add a Second Pendulum", font_size=40, color=WHITE)
         title.to_edge(UP, buff=0.4)
-        self.add_subcaption("Ahora añadimos un segundo péndulo debajo del primero.", duration=3)
+        self.add_subcaption("Now attach a second pendulum below the first.", duration=3)
         self.play(FadeIn(title), run_time=1.0)
 
         ## Scene2_DoublePendulumIntro.setup
@@ -157,12 +157,12 @@ class Scene2_DoublePendulumIntro(Scene):
         self.play(Create(rod1), FadeIn(joint_dot), FadeIn(pivot_dot), run_time=1.0)
 
         # Then add second rod and bob
-        self.add_subcaption("Por un momento, todavía se ve ordenado.", duration=3)
+        self.add_subcaption("It still looks orderly... for a moment.", duration=3)
         self.play(Create(rod2), FadeIn(bob2), run_time=1.0)
 
         # Labels
-        label1 = Text("varilla 1", font_size=22, color=GREY_A)
-        label2 = Text("varilla 2", font_size=22, color=GREY_A)
+        label1 = Text("rod 1", font_size=22, color=GREY_A)
+        label2 = Text("rod 2", font_size=22, color=GREY_A)
 
         def update_label1(m):
             jp = joint_pos()
@@ -187,7 +187,7 @@ class Scene2_DoublePendulumIntro(Scene):
         n = 120
         traj = simulate_double_pendulum(state0, n, dt=0.04)
 
-        self.add_subcaption("La complejidad crece con cada oscilación.", duration=3)
+        self.add_subcaption("The complexity grows with every swing.", duration=3)
 
         # Animate through pre-computed frames
         for i in range(0, n, 4):
@@ -210,10 +210,10 @@ class Scene3_ChaosReveal(Scene):
         self.camera.background_color = BLACK
 
         ## Scene3_ChaosReveal.title
-        title = Text("Caos: mismas reglas, destino distinto", font_size=36, color=WHITE)
+        title = Text("Chaos: Same Rules, Different Fate", font_size=36, color=WHITE)
         title.to_edge(UP, buff=0.3)
         self.add_subcaption(
-            "Dos péndulos dobles, con condiciones iniciales casi idénticas.", duration=3
+            "Two double pendulums, nearly identical initial conditions.", duration=3
         )
         self.play(FadeIn(title), run_time=0.8)
 
@@ -270,11 +270,11 @@ class Scene3_ChaosReveal(Scene):
         # Legends
         legend_A = VGroup(
             Dot(radius=0.12, color=TEAL_C),
-            Text("Péndulo A", font_size=22, color=TEAL_C)
+            Text("Pendulum A", font_size=22, color=TEAL_C)
         ).arrange(RIGHT, buff=0.15).to_corner(DL, buff=0.5)
         legend_B = VGroup(
             Dot(radius=0.12, color=GOLD),
-            Text("Péndulo B", font_size=22, color=GOLD)
+            Text("Pendulum B", font_size=22, color=GOLD)
         ).arrange(RIGHT, buff=0.15).next_to(legend_A, RIGHT, buff=0.6)
 
         diff_label = Text("Δθ₁ = 0.001 rad", font_size=20, color=RED_B)
@@ -294,20 +294,20 @@ class Scene3_ChaosReveal(Scene):
         )
 
         ## Scene3_ChaosReveal.phase1: they start together
-        self.add_subcaption("Al principio, se mueven juntos...", duration=3)
+        self.add_subcaption("At first, they move together...", duration=3)
         self.play(frame.animate.set_value(80), run_time=3.0, rate_func=linear)
 
-        ## Scene3_ChaosReveal.phase2 — they diverge
+        ## Scene3_ChaosReveal.phase2: they diverge
         self.add_subcaption(
-            "Luego se separan: completamente, de forma impredecible.", duration=4
+            "Then they diverge, completely, unpredictably.", duration=4
         )
         self.play(frame.animate.set_value(300), run_time=4.5, rate_func=linear)
 
         ## Scene3_ChaosReveal.chaos_label
-        chaos_label = Text("Esto es CAOS", font_size=44, color=RED_B)
+        chaos_label = Text("This is CHAOS", font_size=44, color=RED_B)
         chaos_label.move_to(DOWN * 2.8)
         self.add_subcaption(
-            "Esto es caos: determinismo sin predictibilidad.", duration=3
+            "This is chaos: determinism without predictability.", duration=3
         )
         self.play(Write(chaos_label), run_time=1.2)
         self.wait(1.5)
@@ -327,10 +327,10 @@ class Scene4_PhasePortrait(Scene):
         self.camera.background_color = BLACK
 
         ## Scene4_PhasePortrait.title
-        title = Text("Espacio de fases: donde vive el caos", font_size=36, color=WHITE)
+        title = Text("Phase Space: Where Chaos Lives", font_size=36, color=WHITE)
         title.to_edge(UP, buff=0.3)
         self.add_subcaption(
-            "En el espacio de fases, el movimiento ordenado traza elipses limpias.", duration=3
+            "In phase space, orderly motion traces clean ellipses.", duration=3
         )
         self.play(FadeIn(title), run_time=0.8)
 
@@ -345,10 +345,10 @@ class Scene4_PhasePortrait(Scene):
         )
         axes.move_to(ORIGIN + DOWN * 0.3)
 
-        x_label = Text("θ₂ (ángulo)", font_size=22, color=GREY_A).next_to(
+        x_label = Text("θ₂ (angle)", font_size=22, color=GREY_A).next_to(
             axes.x_axis, DOWN, buff=0.25
         )
-        y_label = Text("ω₂ (velocidad)", font_size=22, color=GREY_A).next_to(
+        y_label = Text("ω₂ (velocity)", font_size=22, color=GREY_A).next_to(
             axes.y_axis, LEFT, buff=0.15
         )
 
@@ -367,10 +367,10 @@ class Scene4_PhasePortrait(Scene):
         ellipse.set_points_as_corners(ellipse_points)
         ellipse.make_smooth()
 
-        simple_label = Text("Péndulo simple: elipse cerrada", font_size=20, color=TEAL_C)
+        simple_label = Text("Simple pendulum: closed ellipse", font_size=20, color=TEAL_C)
         simple_label.to_corner(UL, buff=0.4).shift(DOWN * 1.0)
 
-        self.add_subcaption("Un péndulo simple traza una elipse cerrada y ordenada.", duration=2.5)
+        self.add_subcaption("A simple pendulum traces a neat closed ellipse.", duration=2.5)
         self.play(Create(ellipse), FadeIn(simple_label), run_time=2.5)
         self.wait(0.5)
 
@@ -389,10 +389,10 @@ class Scene4_PhasePortrait(Scene):
         # Build phase path in chunks and draw it progressively
         self.play(FadeOut(ellipse), FadeOut(simple_label), run_time=0.8)
 
-        chaos_label = Text("Péndulo doble: nunca se repite", font_size=20, color=GOLD)
+        chaos_label = Text("Double pendulum: never repeats", font_size=20, color=GOLD)
         chaos_label.to_corner(UL, buff=0.4).shift(DOWN * 1.0)
         self.add_subcaption(
-            "Pero el péndulo doble nunca se repite: vaga para siempre.", duration=4
+            "But the double pendulum never repeats, it wanders forever.", duration=4
         )
         self.play(FadeIn(chaos_label), run_time=0.4)
 
@@ -435,10 +435,10 @@ class Scene5_LyapunovExponent(Scene):
         self.camera.background_color = BLACK
 
         ## Scene5_LyapunovExponent.title
-        title = Text("Midiendo el caos: el exponente de Lyapunov", font_size=34, color=WHITE)
+        title = Text("Measuring Chaos: The Lyapunov Exponent", font_size=34, color=WHITE)
         title.to_edge(UP, buff=0.3)
         self.add_subcaption(
-            "La distancia entre trayectorias crece exponencialmente.", duration=3
+            "The distance between trajectories grows exponentially.", duration=3
         )
         self.play(FadeIn(title), run_time=0.8)
 
@@ -469,10 +469,10 @@ class Scene5_LyapunovExponent(Scene):
             tips=False,
         )
         axes.shift(DOWN * 0.5)
-        x_label = Text("tiempo (s)", font_size=20, color=GREY_A).next_to(
+        x_label = Text("time (s)", font_size=20, color=GREY_A).next_to(
             axes.x_axis, DOWN, buff=0.2
         )
-        y_label = Text("ln(separación)", font_size=20, color=GREY_A).next_to(
+        y_label = Text("ln(separation)", font_size=20, color=GREY_A).next_to(
             axes.y_axis, LEFT, buff=0.15
         )
 
@@ -503,7 +503,7 @@ class Scene5_LyapunovExponent(Scene):
         )
 
         self.add_subcaption(
-            "El exponente de Lyapunov λ > 0 es la firma del caos.", duration=4
+            "The Lyapunov exponent λ > 0 is the signature of chaos.", duration=4
         )
         self.play(Create(sep_curve), run_time=3.0, rate_func=linear)
         self.play(Create(ref_line), run_time=1.0)
@@ -514,11 +514,11 @@ class Scene5_LyapunovExponent(Scene):
         self.play(Write(lambda_eq), run_time=0.8)
 
         forecast_text = Text(
-            "Por qué los pronósticos fallan más allá de ~1 semana", font_size=22, color=GREY_A
+            "Why forecasts fail beyond ~1 week", font_size=22, color=GREY_A
         )
         forecast_text.next_to(lambda_eq, DOWN, buff=0.3)
         self.add_subcaption(
-            "Esto explica por qué la predicción meteorológica a largo plazo es fundamentalmente imposible.",
+            "It explains why long-range weather prediction is fundamentally impossible.",
             duration=3
         )
         self.play(FadeIn(forecast_text), run_time=0.8)
@@ -562,7 +562,7 @@ class Scene6_Conclusion(Scene):
         # Divider line
         divider = DashedLine(UP * 3.5, DOWN * 3.5, color=GREY_D, stroke_width=1.5)
 
-        self.add_subcaption("Las leyes son exactas. El futuro está determinado.", duration=3)
+        self.add_subcaption("The laws are exact. The future is determined.", duration=3)
         self.play(
             Create(left_axes), Create(right_axes),
             Create(divider), run_time=1.2
@@ -592,9 +592,9 @@ class Scene6_Conclusion(Scene):
         chaotic_path.set_points_as_corners(chaotic_pts)
 
         # Labels above each panel
-        label_simple = Text("Péndulo simple", font_size=22, color=TEAL_C)
+        label_simple = Text("Simple pendulum", font_size=22, color=TEAL_C)
         label_simple.next_to(left_axes, UP, buff=0.3)
-        label_chaotic = Text("Péndulo doble", font_size=22, color=GOLD)
+        label_chaotic = Text("Double pendulum", font_size=22, color=GOLD)
         label_chaotic.next_to(right_axes, UP, buff=0.3)
 
         self.play(
@@ -608,12 +608,12 @@ class Scene6_Conclusion(Scene):
 
         ## Scene6_Conclusion.final_text
         self.add_subcaption(
-            "¿Pero la predicción? Imposible más allá de un instante.", duration=3
+            "But prediction? Impossible beyond a heartbeat.", duration=3
         )
         self.wait(2)
 
         final_text = Text(
-            "Determinismo  ≠  Predictibilidad",
+            "Determinism  ≠  Predictability",
             font_size=42,
             color=WHITE,
         )
@@ -621,7 +621,7 @@ class Scene6_Conclusion(Scene):
         final_text.to_edge(DOWN, buff=0.6)
 
         self.add_subcaption(
-            "Determinismo no significa predictibilidad.", duration=3
+            "Determinism does not mean predictability.", duration=3
         )
         self.play(Write(final_text), run_time=2.0)
         self.wait(2.5)
