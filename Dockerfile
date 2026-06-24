@@ -4,6 +4,7 @@ WORKDIR /app
 
 # System dependencies for manim and ffmpeg
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     ffmpeg \
     libcairo2-dev \
     libpango1.0-dev \
