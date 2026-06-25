@@ -53,6 +53,18 @@ It began as a prototype of a web app that uses [GPT-4](https://openai.com/resear
 - 🧑‍💻 [Generative Manim Developers](https://discord.gg/SNdbPU2AMM): Join our Discord server, learn new things, share your creations and more!
 - 🍎 [Generative Manim Streamlit (Legacy)](https://github.com/360macky/generative-manim/tree/main/streamlit): First LLM exploration of LLMs and Animation.
 
+## 🎬 Animo
+
+**[Animo](https://animo.video)** is a lightweight desktop application that turns plain English descriptions into animated videos using AI and Manim. It is the natural evolution of Generative Manim, taking everything built in this repository and packaging it into a polished, self-contained desktop experience.
+
+Key improvements over Generative Manim:
+
+- **Desktop-first, local rendering:** animations render on your machine with no cloud uploads, giving you full privacy and control over your work.
+- **Unified workflow:** everything lives in one app with no need to juggle a web UI, a separate API, and a render environment.
+- **Zero extra cost:** Animo uses your existing Claude or ChatGPT subscription with no additional fees on top of what you already pay.
+- **Code ownership out of the box:** generated Manim code is yours to export, version-control, and reuse without any platform lock-in.
+- **Lower barrier to entry:** no Manim knowledge required and no server setup or Docker container to run.
+
 ## 💻 Models
 
 **Models** are the core of Generative Manim. A model is a way to convert text to code, that can later be rendered in a video.
