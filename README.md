@@ -169,6 +169,8 @@ Thank you to everyone who has contributed to Generative Manim!
 | [@abdullahsohaill](https://github.com/abdullahsohaill) | Add Gemini 2.5 Flash and Gemini 3 Flash support via google-genai |
 | [@tranquac](https://github.com/tranquac) | Fix command injection vulnerability in ffmpeg video export |
 | [@Wing900](https://github.com/Wing900) | Add Chinese README translation |
+| [@Puiching-Memory](https://github.com/Puiching-Memory) | Formatter, config, and tooling improvements |
+| [@RheagalFire](https://github.com/RheagalFire) | Add LiteLLM as AI gateway engine and streaming/edge case tests |
 
 ## 🤲 Contributing
 
