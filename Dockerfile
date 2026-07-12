@@ -16,8 +16,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY api/ api/
 
+RUN useradd --create-home --uid 1000 appuser \
+    && chown -R appuser:appuser /app
+
+USER appuser
+
 ENV FLASK_APP=api.run
 ENV FLASK_ENV=production
+ENV HOME=/home/appuser
 
 EXPOSE 8080
 
