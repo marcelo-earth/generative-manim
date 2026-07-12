@@ -286,14 +286,26 @@ config.frame_width = {frame_width}
 
 @video_rendering_bp.route("/v1/video/exporting", methods=["POST"])
 def export_video():
-    scenes = request.json.get("scenes")
-    title_slug = request.json.get("titleSlug")
+    body, err = get_json_body()
+    if err:
+        return err
+
+    scenes = body.get("scenes")
+    if not isinstance(scenes, list) or not scenes:
+        return jsonify({"error": "'scenes' must be a non-empty array"}), 400
+
+    title_slug = body.get("titleSlug")
     local_filenames = []
 
-    for scene in scenes:
-        video_url = scene["videoUrl"]
-        local_filename = download_video(video_url)
-        local_filenames.append(local_filename)
+    try:
+        for scene in scenes:
+            video_url = scene.get("videoUrl") if isinstance(scene, dict) else None
+            local_filename = download_video(video_url)
+            local_filenames.append(local_filename)
+    except ValueError as e:
+        return jsonify({"error": f"Invalid videoUrl: {e}"}), 400
+    except requests.RequestException as e:
+        return jsonify({"error": f"Failed to download scene video: {e}"}), 400
 
     timestamp = int(time.time())
     safe_slug = re.sub(r'[^a-zA-Z0-9_-]', '', title_slug or 'untitled')
@@ -313,19 +325,30 @@ def export_video():
     try:
         subprocess.run(command_list, check=True)
         public_url = upload_to_azure_storage(
-            merged_filename, f"exported-scene-{title_slug}-{timestamp}"
+            merged_filename, f"exported-scene-{safe_slug}-{timestamp}"
         )
         return jsonify({"status": "Videos merged successfully", "video_url": public_url})
     except subprocess.CalledProcessError:
         return jsonify({"error": "Failed to merge videos"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    finally:
+        for filename in local_filenames:
+            try:
+                os.remove(filename)
+            except OSError:
+                pass
 
 
 def download_video(video_url):
-    local_filename = video_url.split("/")[-1]
-    response = requests.get(video_url)
-    response.raise_for_status()
-    with open(local_filename, 'wb') as f:
-        f.write(response.content)
+    assert_public_http_url(video_url)
+
+    local_filename = os.path.join(os.getcwd(), f"scene-download-{uuid.uuid4().hex}.mp4")
+    with requests.get(video_url, stream=True, timeout=30, allow_redirects=False) as response:
+        if 300 <= response.status_code < 400:
+            raise ValueError("redirects are not allowed for scene video URLs")
+        response.raise_for_status()
+        with open(local_filename, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                f.write(chunk)
     return local_filename
