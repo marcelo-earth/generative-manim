@@ -14,7 +14,7 @@ from azure.storage.blob import BlobServiceClient
 from flask import Blueprint, Response, jsonify, request
 
 from api.validation import get_json_body, require_string, validate_aspect_ratio, validate_boolean
-from api.video_utils import get_frame_config
+from api.video_utils import assert_public_http_url, get_frame_config
 
 video_rendering_bp = Blueprint("video_rendering", __name__)
 
