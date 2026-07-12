@@ -6,6 +6,7 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+from .auth import require_api_key
 from .routes.chat_generation import chat_generation_bp
 from .routes.code_generation import code_generation_bp
 from .routes.health import health_bp
@@ -42,6 +43,8 @@ def create_app():
     limiter.limit("60 per minute")(code_generation_bp)
 
     CORS(app)
+
+    app.before_request(require_api_key)
 
     @app.errorhandler(429)
     def ratelimit_handler(e):
