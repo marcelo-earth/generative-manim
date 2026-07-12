@@ -38,7 +38,10 @@ ANTHROPIC_API_KEY=your_anthropic_key
 GEMINI_API_KEY=your_gemini_key
 USE_LOCAL_STORAGE=true
 BASE_URL=https://your-api-domain.example
+API_KEY=a_long_random_secret
 ```
+
+`API_KEY` protects every route except `/`, `/openapi.yaml`, `/health`, `/v1/health`, and served files under `/public/...`. Callers must send it back as the `X-API-Key` header. If `API_KEY` is unset, no authentication is enforced, which is only appropriate for local development: the rendering endpoints execute arbitrary submitted code, so any public deployment must set `API_KEY`.
 
 If you use Azure Blob Storage for rendered videos, set:
 
@@ -77,6 +80,7 @@ Then test code generation:
 ```bash
 curl -X POST https://your-render-service.onrender.com/v1/code/generation \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: $API_KEY" \
   -d '{"prompt":"Create a Manim animation with a blue circle expanding from the center."}'
 ```
 
@@ -85,6 +89,7 @@ And test rendering:
 ```bash
 curl -X POST https://your-render-service.onrender.com/v1/video/rendering \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: $API_KEY" \
   -d '{
     "code": "class DrawCircle(Scene):\n    def construct(self):\n        circle = Circle(color=BLUE)\n        self.play(Create(circle))",
     "file_class": "DrawCircle",
@@ -113,6 +118,7 @@ docker run --rm -p 8080:8080 \
   -e GEMINI_API_KEY="$GEMINI_API_KEY" \
   -e USE_LOCAL_STORAGE=true \
   -e BASE_URL="http://localhost:8080" \
+  -e API_KEY="$API_KEY" \
   generative-manim-api
 ```
 
@@ -175,4 +181,4 @@ That avoids web request timeouts and lets you scale render workers separately fr
 
 ## Security
 
-Generated Manim code is Python code. Treat rendering as untrusted code execution unless all prompts and code come from trusted users. For public deployments, isolate render workers, restrict network access where possible, add authentication, rate-limit requests, and set per-job time and memory limits.
+Generated Manim code is Python code. Treat rendering as untrusted code execution unless all prompts and code come from trusted users. For public deployments, isolate render workers, restrict network access where possible, set `API_KEY` to require authentication, rate-limit requests (already enabled by default), and set per-job time and memory limits.
