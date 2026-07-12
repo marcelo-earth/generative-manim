@@ -13,7 +13,13 @@ import requests
 from azure.storage.blob import BlobServiceClient
 from flask import Blueprint, Response, jsonify, request
 
-from api.validation import get_json_body, require_string, validate_aspect_ratio, validate_boolean
+from api.validation import (
+    get_json_body,
+    require_string,
+    validate_aspect_ratio,
+    validate_boolean,
+    validate_identifier,
+)
 from api.video_utils import assert_public_http_url, get_frame_config
 
 video_rendering_bp = Blueprint("video_rendering", __name__)
@@ -75,8 +81,11 @@ def render_video():
     if err:
         return err
 
+    file_class, err = validate_identifier(body, "file_class", default="GenScene")
+    if err:
+        return err
+
     file_name = body.get("file_name")
-    file_class = body.get("file_class")
     user_id = body.get("user_id") or str(uuid.uuid4())
     project_name = body.get("project_name")
     iteration = body.get("iteration")
