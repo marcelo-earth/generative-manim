@@ -9,9 +9,12 @@ models_bp = Blueprint("models", __name__)
 _ENGINES = {
     "openai": {
         "env_var": "OPENAI_API_KEY",
-        "default": "gpt-4o",
+        "default": "gpt-5.6-terra",
         "models": [
-            {"id": "gpt-4o", "description": "GPT-4o: OpenAI's latest multimodal model"},
+            {"id": "gpt-5.6-sol", "description": "GPT-5.6 Sol: frontier model for complex professional work"},
+            {"id": "gpt-5.6-terra", "description": "GPT-5.6 Terra: balances intelligence and cost"},
+            {"id": "gpt-5.6-luna", "description": "GPT-5.6 Luna: fastest, most cost-efficient tier"},
+            {"id": "gpt-4o", "description": "GPT-4o: OpenAI's multimodal model"},
             {"id": "o1-mini", "description": "o1-mini: compact reasoning model"},
         ],
     },
