@@ -24,7 +24,7 @@ chat_generation_bp = Blueprint("chat_generation", __name__)
 FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
 
 _ENGINE_DEFAULTS = {
-    "openai": "gpt-4o",
+    "openai": "gpt-5.6-terra",
     "anthropic": "claude-sonnet-4-6",
     "deepseek": "r1",
     "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
@@ -33,7 +33,7 @@ _ENGINE_DEFAULTS = {
 }
 
 _VALID_MODELS = {
-    "openai": ["gpt-4o", "o1-mini"],
+    "openai": ["gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-4o", "o1-mini"],
     "anthropic": [
         "claude-sonnet-4-6",
         "claude-opus-4-7",
@@ -229,7 +229,7 @@ def generate_code_chat():
 
 # What the user can do?
 
-The user can create a new project, add scenes, and generate the video. You can help the user to generate the video by creating the code for the scenes. The user can add custom rules for you, can select a different aspect ratio, and can change the model (the models are: OpenAI GPT-4o, and Anthropic Claude 3.5 Sonnet).
+The user can create a new project, add scenes, and generate the video. You can help the user to generate the video by creating the code for the scenes. The user can add custom rules for you, can select a different aspect ratio, and can change the model (the models are: OpenAI GPT-5.6, and Anthropic Claude Sonnet).
 
 # Project
 
@@ -663,7 +663,7 @@ Rules:
                 for attempt in range(max_retries):
                     try:
                         stream = client.chat.completions.create(
-                            model="gpt-4o",
+                            model=model,
                             messages=messages,
                             stream=True,
                             functions=animo_functions["openai"],
