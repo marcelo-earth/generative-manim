@@ -16,7 +16,7 @@ from api.video_utils import get_frame_config
 video_generation_bp = Blueprint('video_generation', __name__)
 
 
-def generate_manim_code(prompt, engine="openai", model="gpt-4o"):
+def generate_manim_code(prompt, engine="openai", model="gpt-5.6-terra"):
     if model.startswith("claude-"):
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         messages = [{"role": "user", "content": prompt}]
@@ -71,7 +71,7 @@ def generate_video():
             return err
 
         engine = body.get("engine", "openai")
-        model = body.get("model", "gpt-4o")
+        model = body.get("model", "gpt-5.6-terra")
         user_id = body.get("user_id") or str(uuid.uuid4())
         project_name = body.get("project_name", "untitled")
         iteration = body.get("iteration", 1)
