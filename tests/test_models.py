@@ -42,15 +42,18 @@ class TestModelsEndpoint:
         openai_entry = next(e for e in data["engines"] if e["engine"] == "openai")
         assert openai_entry["configured"] is True
 
-    def test_anthropic_default_is_claude_sonnet_4_6(self, client):
+    def test_anthropic_default_is_claude_sonnet_5(self, client):
         data = client.get("/v1/models").get_json()
         anthropic = next(e for e in data["engines"] if e["engine"] == "anthropic")
-        assert anthropic["default"] == "claude-sonnet-4-6"
+        assert anthropic["default"] == "claude-sonnet-5"
 
-    def test_anthropic_models_include_claude_4(self, client):
+    def test_anthropic_models_include_claude_5_and_4(self, client):
         data = client.get("/v1/models").get_json()
         anthropic = next(e for e in data["engines"] if e["engine"] == "anthropic")
         model_ids = [m["id"] for m in anthropic["models"]]
+        assert "claude-sonnet-5" in model_ids
+        assert "claude-opus-4-8" in model_ids
+        assert "claude-fable-5" in model_ids
         assert "claude-sonnet-4-6" in model_ids
         assert "claude-opus-4-7" in model_ids
 
