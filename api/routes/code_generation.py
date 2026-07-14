@@ -14,7 +14,7 @@ code_generation_bp = Blueprint('code_generation', __name__)
 
 ENGINE_DEFAULTS = {
     "openai": "gpt-4o",
-    "anthropic": "claude-sonnet-4-6",
+    "anthropic": "claude-sonnet-5",
     "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
     "gemini": "gemini-2.5-flash",
     "litellm": "openai/gpt-4o",
