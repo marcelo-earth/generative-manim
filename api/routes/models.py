@@ -20,10 +20,13 @@ _ENGINES = {
     },
     "anthropic": {
         "env_var": "ANTHROPIC_API_KEY",
-        "default": "claude-sonnet-4-6",
+        "default": "claude-sonnet-5",
         "models": [
-            {"id": "claude-sonnet-4-6", "description": "Claude Sonnet 4.6: balanced speed and quality"},
-            {"id": "claude-opus-4-7", "description": "Claude Opus 4.7: highest capability"},
+            {"id": "claude-fable-5", "description": "Claude Fable 5: most capable model, for the most demanding reasoning"},
+            {"id": "claude-opus-4-8", "description": "Claude Opus 4.8: highest capability, state of the art on long-horizon agentic work"},
+            {"id": "claude-sonnet-5", "description": "Claude Sonnet 5: best combination of speed and intelligence"},
+            {"id": "claude-sonnet-4-6", "description": "Claude Sonnet 4.6: previous-generation balanced model"},
+            {"id": "claude-opus-4-7", "description": "Claude Opus 4.7: previous-generation Opus"},
             {"id": "claude-haiku-4-5-20251001", "description": "Claude Haiku 4.5: fastest and most compact"},
             {"id": "claude-3-5-sonnet-20241022", "description": "Claude 3.5 Sonnet (legacy)"},
         ],

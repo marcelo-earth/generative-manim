@@ -105,7 +105,7 @@ class TestChatGenerationModelDefaults:
             client.post("/v1/chat/generation", json={"prompt": "test", "engine": "openai"})
         assert captured.get("model") == "gpt-5.6-terra"
 
-    def test_anthropic_default_model_is_claude_sonnet_4_6(self, client, monkeypatch):
+    def test_anthropic_default_model_is_claude_sonnet_5(self, client, monkeypatch):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
         captured = {}
         with mock.patch("anthropic.Anthropic") as mock_anthropic:
@@ -114,7 +114,7 @@ class TestChatGenerationModelDefaults:
                 return iter([])
             mock_anthropic.return_value.messages.create.side_effect = capture
             client.post("/v1/chat/generation", json={"prompt": "test", "engine": "anthropic"})
-        assert captured.get("model") == "claude-sonnet-4-6"
+        assert captured.get("model") == "claude-sonnet-5"
 
 
 class TestChatGenerationPromptMessages:
