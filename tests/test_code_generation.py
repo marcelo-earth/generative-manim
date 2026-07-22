@@ -56,7 +56,7 @@ class TestCodeGenerationOpenAI:
         assert resp.status_code == 200
         assert "code" in resp.get_json()
 
-    def test_uses_default_model_gpt4o(self, client, monkeypatch):
+    def test_uses_default_model_gpt_5_6_terra(self, client, monkeypatch):
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         captured = {}
         with mock.patch("api.routes.code_generation.get_openai_compatible_client") as mock_client:
@@ -65,7 +65,7 @@ class TestCodeGenerationOpenAI:
                 return _make_openai_response("code")
             mock_client.return_value.chat.completions.create.side_effect = capture
             client.post("/v1/code/generation", json={"prompt": "test", "engine": "openai"})
-        assert captured.get("model") == "gpt-4o"
+        assert captured.get("model") == "gpt-5.6-terra"
 
     def test_custom_model_forwarded(self, client, monkeypatch):
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")

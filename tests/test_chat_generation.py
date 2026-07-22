@@ -94,7 +94,7 @@ class TestChatGenerationEngineValidation:
 
 
 class TestChatGenerationModelDefaults:
-    def test_openai_default_model_is_gpt4o(self, client, monkeypatch):
+    def test_openai_default_model_is_gpt_5_6_terra(self, client, monkeypatch):
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")
         captured = {}
         with mock.patch("openai.OpenAI") as mock_openai:
@@ -103,7 +103,7 @@ class TestChatGenerationModelDefaults:
                 return iter([])
             mock_openai.return_value.chat.completions.create.side_effect = capture
             client.post("/v1/chat/generation", json={"prompt": "test", "engine": "openai"})
-        assert captured.get("model") == "gpt-4o"
+        assert captured.get("model") == "gpt-5.6-terra"
 
     def test_anthropic_default_model_is_claude_sonnet_5(self, client, monkeypatch):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
