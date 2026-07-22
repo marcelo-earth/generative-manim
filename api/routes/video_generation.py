@@ -15,6 +15,8 @@ from api.video_utils import get_frame_config
 
 video_generation_bp = Blueprint('video_generation', __name__)
 
+MOONSHOT_BASE_URL = "https://api.moonshot.ai/v1"
+
 
 def generate_manim_code(prompt, engine="openai", model="gpt-5.6-terra"):
     if model.startswith("claude-"):
@@ -35,6 +37,22 @@ def generate_manim_code(prompt, engine="openai", model="gpt-5.6-terra"):
     elif engine == "gemini" or model.startswith("gemini-"):
         try:
             return generate_gemini_content(model, MANIM_CODE_GENERATION_PROMPT, prompt)
+        except Exception as e:
+            raise Exception(f"Error generating code with {model}: {str(e)}")
+    elif engine == "moonshot" or model.startswith("kimi-"):
+        client = OpenAI(base_url=MOONSHOT_BASE_URL, api_key=os.getenv("MOONSHOT_API_KEY"))
+        messages = [
+            {"role": "system", "content": MANIM_CODE_GENERATION_PROMPT},
+            {"role": "user", "content": prompt},
+        ]
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=0.2,
+            )
+            code = response.choices[0].message.content
+            return code
         except Exception as e:
             raise Exception(f"Error generating code with {model}: {str(e)}")
     else:

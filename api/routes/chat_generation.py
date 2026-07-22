@@ -22,6 +22,7 @@ from api.validation import get_json_body
 chat_generation_bp = Blueprint("chat_generation", __name__)
 
 FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
+MOONSHOT_BASE_URL = "https://api.moonshot.ai/v1"
 
 _ENGINE_DEFAULTS = {
     "openai": "gpt-5.6-terra",
@@ -30,6 +31,7 @@ _ENGINE_DEFAULTS = {
     "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
     "litellm": "openai/gpt-4o",
     "gemini": "gemini-2.5-flash",
+    "moonshot": "kimi-k3",
 }
 
 _VALID_MODELS = {
@@ -49,6 +51,7 @@ _VALID_MODELS = {
     "featherless": None,
     "litellm": None,
     "gemini": None,
+    "moonshot": ["kimi-k3", "kimi-k2.7-code"],
 }
 
 
@@ -232,7 +235,7 @@ def generate_code_chat():
 
 # What the user can do?
 
-The user can create a new project, add scenes, and generate the video. You can help the user to generate the video by creating the code for the scenes. The user can add custom rules for you, can select a different aspect ratio, and can change the model (the models are: OpenAI GPT-5.6, and Anthropic Claude Sonnet 5).
+The user can create a new project, add scenes, and generate the video. You can help the user to generate the video by creating the code for the scenes. The user can add custom rules for you, can select a different aspect ratio, and can change the model (the models are: OpenAI GPT-5.6, Anthropic Claude Sonnet 5, and Moonshot AI Kimi K3).
 
 # Project
 
@@ -444,6 +447,40 @@ Rules:
 4. Output only Python code unless the user asks a conceptual question.
 5. The code must be complete and runnable."""
         messages[0] = {"role": "system", "content": featherless_system_prompt}
+
+        def generate():
+            try:
+                stream = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    temperature=data.get("temperature", 0.2),
+                    max_tokens=data.get("maxTokens", 2048),
+                    stream=True,
+                )
+                for chunk in stream:
+                    content = chunk.choices[0].delta.content
+                    if not content:
+                        continue
+                    if is_for_platform:
+                        text_obj = json.dumps({"type": "text", "text": content})
+                        yield f"{text_obj}\n"
+                    else:
+                        yield content
+            except Exception as e:
+                safe_message = f"{type(e).__name__}: generation failed"
+                if is_for_platform:
+                    yield f"{json.dumps({'type': 'error', 'text': safe_message})}\n"
+                else:
+                    yield f"Error: {safe_message}"
+
+        return _streaming_response(generate, is_for_platform)
+
+    elif engine == "moonshot":
+        api_key = os.environ.get("MOONSHOT_API_KEY")
+        if not api_key:
+            return jsonify({"error": "MOONSHOT_API_KEY is required when engine='moonshot'"}), 500
+
+        client = openai.OpenAI(base_url=MOONSHOT_BASE_URL, api_key=api_key)
 
         def generate():
             try:

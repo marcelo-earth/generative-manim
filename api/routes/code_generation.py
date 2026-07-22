@@ -18,9 +18,11 @@ ENGINE_DEFAULTS = {
     "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
     "gemini": "gemini-2.5-flash",
     "litellm": "openai/gpt-4o",
+    "moonshot": "kimi-k3",
 }
 
 FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
+MOONSHOT_BASE_URL = "https://api.moonshot.ai/v1"
 
 
 def get_openai_compatible_client(engine: str) -> OpenAI:
@@ -29,6 +31,12 @@ def get_openai_compatible_client(engine: str) -> OpenAI:
         if not api_key:
             raise ValueError("FEATHERLESS_API_KEY is required when engine='featherless'")
         return OpenAI(base_url=FEATHERLESS_BASE_URL, api_key=api_key)
+
+    if engine == "moonshot":
+        api_key = os.getenv("MOONSHOT_API_KEY")
+        if not api_key:
+            raise ValueError("MOONSHOT_API_KEY is required when engine='moonshot'")
+        return OpenAI(base_url=MOONSHOT_BASE_URL, api_key=api_key)
 
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:

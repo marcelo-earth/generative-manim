@@ -55,6 +55,14 @@ _ENGINES = {
         "models": [],
         "note": "Accepts any model string supported by LiteLLM (e.g. openai/gpt-4o, anthropic/claude-sonnet-4-6).",
     },
+    "moonshot": {
+        "env_var": "MOONSHOT_API_KEY",
+        "default": "kimi-k3",
+        "models": [
+            {"id": "kimi-k3", "description": "Kimi K3: Moonshot AI's flagship model, 1M-token context with always-on thinking mode"},
+            {"id": "kimi-k2.7-code", "description": "Kimi K2.7 Code: Moonshot AI's coding-specialized agentic model"},
+        ],
+    },
 }
 
 

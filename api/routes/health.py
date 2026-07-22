@@ -12,6 +12,7 @@ _PROVIDERS = {
     "gemini": "GEMINI_API_KEY",
     "featherless": "FEATHERLESS_API_KEY",
     "litellm": "LITELLM_API_KEY",
+    "moonshot": "MOONSHOT_API_KEY",
 }
 
 
