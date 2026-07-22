@@ -25,7 +25,7 @@ FEATHERLESS_BASE_URL = "https://api.featherless.ai/v1"
 
 _ENGINE_DEFAULTS = {
     "openai": "gpt-4o",
-    "anthropic": "claude-sonnet-4-6",
+    "anthropic": "claude-sonnet-5",
     "deepseek": "r1",
     "featherless": "Qwen/Qwen2.5-Coder-7B-Instruct",
     "litellm": "openai/gpt-4o",
@@ -35,6 +35,9 @@ _ENGINE_DEFAULTS = {
 _VALID_MODELS = {
     "openai": ["gpt-4o", "o1-mini"],
     "anthropic": [
+        "claude-fable-5",
+        "claude-opus-4-8",
+        "claude-sonnet-5",
         "claude-sonnet-4-6",
         "claude-opus-4-7",
         "claude-haiku-4-5-20251001",
@@ -229,7 +232,7 @@ def generate_code_chat():
 
 # What the user can do?
 
-The user can create a new project, add scenes, and generate the video. You can help the user to generate the video by creating the code for the scenes. The user can add custom rules for you, can select a different aspect ratio, and can change the model (the models are: OpenAI GPT-4o, and Anthropic Claude 3.5 Sonnet).
+The user can create a new project, add scenes, and generate the video. You can help the user to generate the video by creating the code for the scenes. The user can add custom rules for you, can select a different aspect ratio, and can change the model (the models are: OpenAI GPT-4o, and Anthropic Claude Sonnet 5).
 
 # Project
 

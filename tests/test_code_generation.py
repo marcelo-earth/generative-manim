@@ -118,7 +118,7 @@ class TestCodeGenerationAnthropic:
         data = resp.get_json()
         assert data["code"] == "from manim import *"
 
-    def test_uses_default_claude_sonnet_4_6(self, client, monkeypatch):
+    def test_uses_default_claude_sonnet_5(self, client, monkeypatch):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
         captured = {}
         with mock.patch("anthropic.Anthropic") as mock_anthropic:
@@ -127,7 +127,7 @@ class TestCodeGenerationAnthropic:
                 return _make_anthropic_response("code")
             mock_anthropic.return_value.messages.create.side_effect = capture
             client.post("/v1/code/generation", json={"prompt": "test", "engine": "anthropic"})
-        assert captured.get("model") == "claude-sonnet-4-6"
+        assert captured.get("model") == "claude-sonnet-5"
 
     def test_claude_opus_4_7_accepted(self, client, monkeypatch):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
