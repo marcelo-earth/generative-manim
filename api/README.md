@@ -30,6 +30,7 @@ And, depending on the model you want to use, you will need to have an API key fo
 - [Anthropic](https://www.anthropic.com/api)
 - [Google Gemini](https://ai.google.dev/gemini-api)
 - [Featherless](https://featherless.ai) for OpenAI-compatible access to hosted open-weight models. See the [Featherless guide](../docs/featherless.md) for setup details.
+- [Moonshot AI](https://platform.moonshot.ai) for Kimi models, accessed via an OpenAI-compatible API.
 
 If you are on MacOS, make sure you have `pkg-config` and `cairo` installed. You can install them using Homebrew:
 
@@ -161,13 +162,14 @@ Example response:
 {
   "status": "healthy",
   "configured_providers": 2,
-  "total_providers": 5,
+  "total_providers": 6,
   "providers": {
     "openai":      { "configured": true,  "env_var": "OPENAI_API_KEY" },
     "anthropic":   { "configured": true,  "env_var": "ANTHROPIC_API_KEY" },
     "gemini":      { "configured": false, "env_var": "GEMINI_API_KEY" },
     "featherless": { "configured": false, "env_var": "FEATHERLESS_API_KEY" },
-    "litellm":     { "configured": false, "env_var": "LITELLM_API_KEY" }
+    "litellm":     { "configured": false, "env_var": "LITELLM_API_KEY" },
+    "moonshot":    { "configured": false, "env_var": "MOONSHOT_API_KEY" }
   }
 }
 ```
@@ -183,3 +185,4 @@ Status is `healthy` when at least one provider key is set, `degraded` when none 
 | `gemini`     | `gemini-2.5-flash`              | `GEMINI_API_KEY`        |
 | `featherless`| `Qwen/Qwen2.5-Coder-7B-Instruct`| `FEATHERLESS_API_KEY`   |
 | `litellm`    | `openai/gpt-4o`                 | `LITELLM_API_KEY`       |
+| `moonshot`   | `kimi-k3`                       | `MOONSHOT_API_KEY`      |

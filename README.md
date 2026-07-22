@@ -83,6 +83,8 @@ Key improvements over Generative Manim:
 | GM Featherless Open Models    | OpenAI-compatible access to hosted open-weight models via Featherless     | Qwen, DeepSeek, CodeLlama, etc. | ✅ |
 | GM Gemini 2.5 Flash           | Google's Gemini 2.5 Flash accessed via google-genai SDK                  | gemini-2.5-flash           | ✅    |
 | GM Gemini 3 Flash             | Google's Gemini 3 Flash preview accessed via google-genai SDK            | gemini-3-flash-preview     | ✅    |
+| GM Kimi K3                    | Moonshot AI's flagship model, 1M-token context with always-on thinking mode | kimi-k3                 | ✅    |
+| GM Kimi K2.7 Code             | Moonshot AI's coding-specialized agentic model                           | kimi-k2.7-code             | ✅    |
 | GM Qwen 2.5 Coder 7B          | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | Qwen2.5-Coder-7B-Instruct | 🚧    |
 | GM DeepSeek Coder V2 Lite      | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | DeepSeek-Coder-V2-Lite     | 🚧    |
 | GM CodeLlama 7B                | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | CodeLlama-7b-Instruct      | 🚧    |

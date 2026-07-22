@@ -248,7 +248,7 @@ components:
           example: Draw a blue circle and animate its creation.
         engine:
           type: string
-          enum: [openai, anthropic, featherless, gemini, litellm]
+          enum: [openai, anthropic, featherless, gemini, litellm, moonshot]
           default: openai
           description: LLM provider to use.
         model:
@@ -276,7 +276,7 @@ components:
             properties:
               engine:
                 type: string
-                enum: [openai, anthropic, gemini, featherless, litellm]
+                enum: [openai, anthropic, gemini, featherless, litellm, moonshot]
               configured:
                 type: boolean
                 description: True if the corresponding API key environment variable is set.
@@ -307,7 +307,7 @@ components:
             $ref: "#/components/schemas/ChatMessage"
         engine:
           type: string
-          enum: [openai, anthropic, featherless, gemini, litellm]
+          enum: [openai, anthropic, featherless, gemini, litellm, moonshot]
           default: openai
         model:
           type: string
@@ -397,7 +397,7 @@ components:
           description: Natural-language description of the animation to generate and render.
         engine:
           type: string
-          enum: [openai, anthropic, featherless, gemini, litellm]
+          enum: [openai, anthropic, featherless, gemini, litellm, moonshot]
           default: openai
         model:
           type: string
