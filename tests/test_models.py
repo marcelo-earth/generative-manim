@@ -13,10 +13,10 @@ class TestModelsEndpoint:
         assert "engines" in data
         assert isinstance(data["engines"], list)
 
-    def test_all_five_engines_present(self, client):
+    def test_all_six_engines_present(self, client):
         data = client.get("/v1/models").get_json()
         engine_names = {e["engine"] for e in data["engines"]}
-        assert engine_names == {"openai", "anthropic", "gemini", "featherless", "litellm"}
+        assert engine_names == {"openai", "anthropic", "gemini", "featherless", "litellm", "moonshot"}
 
     def test_engine_shape(self, client):
         data = client.get("/v1/models").get_json()
@@ -30,7 +30,7 @@ class TestModelsEndpoint:
 
     def test_configured_false_when_no_key(self, client, monkeypatch):
         for var in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY",
-                    "FEATHERLESS_API_KEY", "LITELLM_API_KEY"):
+                    "FEATHERLESS_API_KEY", "LITELLM_API_KEY", "MOONSHOT_API_KEY"):
             monkeypatch.delenv(var, raising=False)
         data = client.get("/v1/models").get_json()
         for entry in data["engines"]:
@@ -61,3 +61,15 @@ class TestModelsEndpoint:
         data = client.get("/v1/models").get_json()
         litellm = next(e for e in data["engines"] if e["engine"] == "litellm")
         assert "note" in litellm
+
+    def test_moonshot_default_is_kimi_k3(self, client):
+        data = client.get("/v1/models").get_json()
+        moonshot = next(e for e in data["engines"] if e["engine"] == "moonshot")
+        assert moonshot["default"] == "kimi-k3"
+
+    def test_moonshot_models_include_kimi_k3_and_code(self, client):
+        data = client.get("/v1/models").get_json()
+        moonshot = next(e for e in data["engines"] if e["engine"] == "moonshot")
+        model_ids = [m["id"] for m in moonshot["models"]]
+        assert "kimi-k3" in model_ids
+        assert "kimi-k2.7-code" in model_ids

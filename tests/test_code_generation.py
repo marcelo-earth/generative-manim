@@ -228,3 +228,38 @@ class TestCodeGenerationFeatherless:
                 "engine": "featherless",
             })
         assert resp.status_code == 500
+
+
+class TestCodeGenerationMoonshot:
+    def test_successful_response(self, client, monkeypatch):
+        monkeypatch.setenv("MOONSHOT_API_KEY", "test-key")
+        with mock.patch("api.routes.code_generation.get_openai_compatible_client") as mock_client:
+            mock_client.return_value.chat.completions.create.return_value = (
+                _make_openai_response("from manim import *")
+            )
+            resp = client.post("/v1/code/generation", json={
+                "prompt": "draw a pentagon",
+                "engine": "moonshot",
+            })
+        assert resp.status_code == 200
+
+    def test_uses_default_model_kimi_k3(self, client, monkeypatch):
+        monkeypatch.setenv("MOONSHOT_API_KEY", "test-key")
+        captured = {}
+        with mock.patch("api.routes.code_generation.get_openai_compatible_client") as mock_client:
+            def capture(**kwargs):
+                captured.update(kwargs)
+                return _make_openai_response("code")
+            mock_client.return_value.chat.completions.create.side_effect = capture
+            client.post("/v1/code/generation", json={"prompt": "test", "engine": "moonshot"})
+        assert captured.get("model") == "kimi-k3"
+
+    def test_missing_api_key_returns_500(self, client, monkeypatch):
+        monkeypatch.delenv("MOONSHOT_API_KEY", raising=False)
+        with mock.patch("api.routes.code_generation.get_openai_compatible_client") as mock_client:
+            mock_client.side_effect = ValueError("MOONSHOT_API_KEY is required")
+            resp = client.post("/v1/code/generation", json={
+                "prompt": "test",
+                "engine": "moonshot",
+            })
+        assert resp.status_code == 500

@@ -40,7 +40,7 @@ class TestHealthEndpoint:
 
     def test_degraded_when_no_keys_configured(self, client, monkeypatch):
         for var in ("OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GEMINI_API_KEY",
-                    "FEATHERLESS_API_KEY", "LITELLM_API_KEY"):
+                    "FEATHERLESS_API_KEY", "LITELLM_API_KEY", "MOONSHOT_API_KEY"):
             monkeypatch.delenv(var, raising=False)
         data = client.get("/health").get_json()
         assert data["status"] == "degraded"
@@ -49,8 +49,8 @@ class TestHealthEndpoint:
     def test_configured_providers_count(self, client, monkeypatch):
         monkeypatch.setenv("OPENAI_API_KEY", "k1")
         monkeypatch.setenv("ANTHROPIC_API_KEY", "k2")
-        for var in ("GEMINI_API_KEY", "FEATHERLESS_API_KEY", "LITELLM_API_KEY"):
+        for var in ("GEMINI_API_KEY", "FEATHERLESS_API_KEY", "LITELLM_API_KEY", "MOONSHOT_API_KEY"):
             monkeypatch.delenv(var, raising=False)
         data = client.get("/health").get_json()
         assert data["configured_providers"] == 2
-        assert data["total_providers"] == 5
+        assert data["total_providers"] == 6
