@@ -10,7 +10,7 @@ from openai import OpenAI
 from api.errors import gateway_timeout, internal_error
 from api.llm_providers import generate_gemini_content
 from api.prompts.system import MANIM_CODE_GENERATION_PROMPT
-from api.validation import get_json_body, require_string, validate_aspect_ratio
+from api.validation import get_json_body, require_string, safe_filename_component, validate_aspect_ratio
 from api.video_utils import get_frame_config
 
 video_generation_bp = Blueprint('video_generation', __name__)
@@ -90,9 +90,9 @@ def generate_video():
 
         engine = body.get("engine", "openai")
         model = body.get("model", "gpt-5.6-terra")
-        user_id = body.get("user_id") or str(uuid.uuid4())
-        project_name = body.get("project_name", "untitled")
-        iteration = body.get("iteration", 1)
+        user_id = safe_filename_component(body.get("user_id"), str(uuid.uuid4()))
+        project_name = safe_filename_component(body.get("project_name"), "untitled")
+        iteration = safe_filename_component(body.get("iteration"), "1")
 
         try:
             code = generate_manim_code(prompt, engine, model)

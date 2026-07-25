@@ -127,6 +127,40 @@ class TestValidateAspectRatio:
         assert "aspect_ratio" in resp.get_json()["error"]
 
 
+class TestSafeFilenameComponent:
+    def test_plain_value_is_kept(self, client):
+        from api.validation import safe_filename_component
+        with client.application.test_request_context("/"):
+            value = safe_filename_component("my-project_1", "default")
+        assert value == "my-project_1"
+
+    def test_path_traversal_sequence_is_stripped(self, client):
+        from api.validation import safe_filename_component
+        with client.application.test_request_context("/"):
+            value = safe_filename_component("../../etc/passwd", "default")
+        assert "/" not in value
+        assert ".." not in value
+        assert value == "etcpasswd"
+
+    def test_none_falls_back_to_default(self, client):
+        from api.validation import safe_filename_component
+        with client.application.test_request_context("/"):
+            value = safe_filename_component(None, "default")
+        assert value == "default"
+
+    def test_only_unsafe_chars_falls_back_to_default(self, client):
+        from api.validation import safe_filename_component
+        with client.application.test_request_context("/"):
+            value = safe_filename_component("../../../", "default")
+        assert value == "default"
+
+    def test_non_string_value_is_stringified(self, client):
+        from api.validation import safe_filename_component
+        with client.application.test_request_context("/"):
+            value = safe_filename_component(3, "default")
+        assert value == "3"
+
+
 class TestValidateBoolean:
     def test_true_accepted(self, client):
         from api.validation import validate_boolean
