@@ -17,7 +17,7 @@ from PIL import Image
 
 from api.llm_providers import generate_gemini_content_stream
 from api.prompts.manimDocs import manimDocs
-from api.validation import get_json_body
+from api.validation import get_json_body, is_valid_identifier
 
 chat_generation_bp = Blueprint("chat_generation", __name__)
 
@@ -133,6 +133,12 @@ def manage_conversation_images(messages, new_images_count, engine):
 
 def _generate_manim_preview(code: str, class_name: str) -> str:
     """Run Manim in PNG mode and return a JSON string with base64-encoded frames."""
+    if not is_valid_identifier(class_name):
+        return json.dumps({
+            "error": "ERROR. 'class_name' must be a valid identifier (letters, digits, underscore only).",
+            "images": [],
+        })
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     api_dir = os.path.dirname(current_dir)
 
@@ -145,12 +151,12 @@ def _generate_manim_preview(code: str, class_name: str) -> str:
     with open(file_path, "w") as f:
         f.write(preview_code)
 
-    command = (
-        f"manim {file_path} {class_name} "
-        f"--format=png --media_dir {temp_dir} --custom_folders -pql --disable_caching"
-    )
+    command = [
+        "manim", file_path, class_name,
+        "--format=png", "--media_dir", temp_dir, "--custom_folders", "-pql", "--disable_caching",
+    ]
     try:
-        subprocess.run(command, shell=True, check=True, capture_output=True, text=True)
+        subprocess.run(command, check=True, capture_output=True, text=True)
 
         previews_dir = os.path.join(api_dir, "public", "previews")
         os.makedirs(previews_dir, exist_ok=True)
