@@ -66,43 +66,33 @@ class TestCountImagesInConversation:
 
 
 class TestManageConversationImages:
-    def test_non_openai_engine_returns_count_unchanged(self):
+    def test_within_limit_returns_count(self):
         msgs = [_image_msg(5)]
-        result = manage_conversation_images(msgs, 10, "anthropic")
-        assert result == 10
-
-    def test_non_openai_engine_does_not_remove_messages(self):
-        msgs = [_image_msg(5)]
-        original_len = len(msgs)
-        manage_conversation_images(msgs, 100, "gemini")
-        assert len(msgs) == original_len
-
-    def test_openai_within_limit_returns_count(self):
-        msgs = [_image_msg(5)]
-        result = manage_conversation_images(msgs, 10, "openai")
+        result = manage_conversation_images(msgs, 10)
         assert result == min(50 - 5, 10)
 
-    def test_openai_at_limit_triggers_eviction(self):
+    def test_at_limit_triggers_eviction(self):
         msgs = [_image_msg(40)]
-        result = manage_conversation_images(msgs, 15, "openai")
+        result = manage_conversation_images(msgs, 15)
         assert result <= 50
 
-    def test_openai_over_limit_evicts_oldest(self):
+    def test_over_limit_evicts_oldest(self):
         msgs = [_image_msg(30), _image_msg(25)]
         original_len = len(msgs)
-        manage_conversation_images(msgs, 5, "openai")
+        manage_conversation_images(msgs, 5)
         assert len(msgs) < original_len
 
-    def test_openai_no_existing_images_returns_new_count(self):
+    def test_no_existing_images_returns_new_count(self):
         msgs = [_text_msg("user", "hello")]
-        result = manage_conversation_images(msgs, 20, "openai")
+        result = manage_conversation_images(msgs, 20)
         assert result == 20
 
-    def test_featherless_returns_count_unchanged(self):
-        msgs = []
-        result = manage_conversation_images(msgs, 7, "featherless")
-        assert result == 7
+    def test_cap_applies_regardless_of_conversation_size(self):
+        msgs = [_image_msg(5)]
+        original_len = len(msgs)
+        manage_conversation_images(msgs, 100)
+        assert len(msgs) <= original_len
 
-    def test_litellm_returns_count_unchanged(self):
-        result = manage_conversation_images([], 3, "litellm")
-        assert result == 3
+    def test_empty_conversation_returns_new_count(self):
+        result = manage_conversation_images([], 7)
+        assert result == 7
