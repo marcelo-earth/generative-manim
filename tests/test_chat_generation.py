@@ -1,8 +1,42 @@
 """Tests for /v1/chat/generation route validation and engine routing."""
 
+import json
 from unittest import mock
 
 import pytest
+
+from api.routes.chat_generation import _generate_manim_preview
+
+
+class TestGenerateManimPreview:
+    def test_rejects_class_name_with_shell_metacharacters(self):
+        result = json.loads(_generate_manim_preview("class GenScene(Scene): pass", "Foo; rm -rf /"))
+        assert "error" in result
+        assert result["images"] == []
+
+    def test_rejects_class_name_with_path_traversal(self):
+        result = json.loads(_generate_manim_preview("class GenScene(Scene): pass", "../../etc/passwd"))
+        assert "error" in result
+
+    def test_invalid_class_name_never_reaches_subprocess(self):
+        with mock.patch("api.routes.chat_generation.subprocess.run") as mock_run:
+            _generate_manim_preview("class GenScene(Scene): pass", "$(whoami)")
+        mock_run.assert_not_called()
+
+    def test_valid_class_name_runs_subprocess_without_shell(self):
+        subprocess_result = mock.MagicMock()
+        subprocess_result.returncode = 0
+
+        with mock.patch("api.routes.chat_generation.subprocess.run", return_value=subprocess_result) as mock_run:
+            with mock.patch("os.listdir", return_value=[]):
+                with mock.patch("builtins.open", mock.mock_open()):
+                    _generate_manim_preview("class GenScene(Scene): pass", "GenScene")
+
+        mock_run.assert_called_once()
+        args, kwargs = mock_run.call_args
+        assert isinstance(args[0], list)
+        assert "GenScene" in args[0]
+        assert kwargs.get("shell") is not True
 
 
 class TestChatGenerationEngineValidation:

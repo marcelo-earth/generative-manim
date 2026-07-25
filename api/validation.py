@@ -50,20 +50,26 @@ def validate_aspect_ratio(body, default="16:9"):
     return value, None
 
 
+def is_valid_identifier(value):
+    """Return True if *value* is a bare Python identifier.
+
+    Used to guard values (e.g. a Manim scene class name) that get
+    interpolated into file paths or CLI arguments, where anything other
+    than a plain identifier (letters, digits, underscore, not starting
+    with a digit) could enable path traversal or argument injection.
+    """
+    return isinstance(value, str) and bool(IDENTIFIER_RE.match(value))
+
+
 def validate_identifier(body, field, default):
     """Validate an optional field that must be a bare Python identifier.
-
-    Used for values (e.g. a Manim scene class name) that get interpolated
-    into file paths or CLI arguments, where anything other than a plain
-    identifier (letters, digits, underscore, not starting with a digit)
-    could enable path traversal or argument injection.
 
     Returns ``(value, None)`` on success or ``(None, error_response)`` if invalid.
     """
     value = body.get(field, default)
     if value is None:
         value = default
-    if not isinstance(value, str) or not IDENTIFIER_RE.match(value):
+    if not is_valid_identifier(value):
         return None, (
             jsonify({"error": f"'{field}' must be a valid identifier (letters, digits, underscore only)"}),
             400,
