@@ -60,15 +60,28 @@
 
 | 名称 (Name)                   | 描述 (Description)                                           | 引擎 (Engine)              | 阶段 (Phase) |
 | ----------------------------- | ------------------------------------------------------------ | -------------------------- | ------------ |
-| GM GPT-5.5                    | OpenAI 用于复杂专业及编码工作的最新前沿模型                  | gpt-5.5                    | ✅            |
+| GM GPT-5.6 Sol                 | OpenAI 用于复杂专业及编码工作的前沿模型                      | gpt-5.6-sol                 | ✅            |
+| GM GPT-5.6 Terra               | 默认 OpenAI 模型，兼顾智能与成本                            | gpt-5.6-terra               | ✅            |
+| GM GPT-5.6 Luna                | 速度最快、成本最低的 OpenAI 档位                            | gpt-5.6-luna                | ✅            |
 | GM GPT-4o                     | 由自定义系统提示词（System Prompt）驱动的 OpenAI 最新 GPT 模型 | GPT-4o                     | ✅            |
+| GM o1-mini                    | 精简型 OpenAI 推理模型                                      | o1-mini                    | ✅            |
 | GM GPT-3.5 Fine Tuned         | 首个 GPT-3.5 微调模型                                        | GPT-3.5                    | ✅            |
 | GM GPT-3.5 Physics Fine Tuned | 经训练用于生成物理动画的 GPT-3.5 微调模型                    | GPT-3.5                    | ✅            |
 | GM Claude Sonnet              | 经我们自定义系统提示词适配的 Claude Sonnet 3 模型            | claude-3-sonnet-20240229   | ✅            |
-| GM Claude Sonnet 3.5          | 经我们自定义系统提示词适配的 Claude Sonnet 3.5 模型          | claude-3-5-sonnet-20240620 | ✅            |
+| GM Claude Sonnet 3.5          | 经我们自定义系统提示词适配的 Claude Sonnet 3.5 模型          | claude-3-5-sonnet-20241022 | ✅            |
+| GM Claude Sonnet 4.6          | 经我们自定义系统提示词适配的 Claude Sonnet 4.6 模型          | claude-sonnet-4-6          | ✅            |
+| GM Claude Sonnet 5            | 默认 Anthropic 模型，兼顾速度与智能                          | claude-sonnet-5            | ✅            |
+| GM Claude Opus 4.7            | Claude Opus 4.7，用于最高质量的 Anthropic 生成               | claude-opus-4-7            | ✅            |
+| GM Claude Opus 4.8            | 能力最强，长周期智能体任务的最新水平                          | claude-opus-4-8            | ✅            |
+| GM Claude Haiku 4.5           | Claude Haiku 4.5，快速轻量的 Anthropic 生成                  | claude-haiku-4-5-20251001  | ✅            |
+| GM Claude Fable 5             | 能力最强的 Anthropic 模型，用于最具挑战性的推理任务           | claude-fable-5             | ✅            |
 | GM Featherless Open Models    | 通过 Featherless 以 OpenAI 兼容的方式访问的托管开源权重模型 | Qwen, DeepSeek, CodeLlama 等 | ✅          |
+| GM LiteLLM Passthrough        | 接受 LiteLLM 支持的任意模型字符串（例如 `openai/gpt-4o`）     | litellm                    | ✅            |
 | GM Gemini 2.5 Flash           | 通过 google-genai SDK 访问的 Google Gemini 2.5 Flash 模型   | gemini-2.5-flash           | ✅            |
+| GM Gemini 2.5 Pro             | 通过 google-genai SDK 访问的 Google Gemini 2.5 Pro 模型     | gemini-2.5-pro             | ✅            |
 | GM Gemini 3 Flash             | 通过 google-genai SDK 访问的 Google Gemini 3 Flash 预览版   | gemini-3-flash-preview     | ✅            |
+| GM Kimi K3                    | Moonshot AI 的旗舰模型，100 万 token 上下文，常驻思考模式    | kimi-k3                    | ✅            |
+| GM Kimi K2.7 Code             | Moonshot AI 面向编码的智能体专用模型                         | kimi-k2.7-code             | ✅            |
 | GM Qwen 2.5 Coder 7B          | 使用 SFT + DPO + GRPO 流程进行微调的开源模型                | Qwen2.5-Coder-7B-Instruct  | 🚧            |
 | GM DeepSeek Coder V2 Lite     | 使用 SFT + DPO + GRPO 流程进行微调的开源模型                | DeepSeek-Coder-V2-Lite     | 🚧            |
 | GM CodeLlama 7B               | 使用 SFT + DPO + GRPO 流程进行微调的开源模型                | CodeLlama-7b-Instruct      | 🚧            |

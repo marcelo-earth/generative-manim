@@ -59,15 +59,28 @@ Los **modelos** son el núcleo de Generative Manim. Un modelo es una forma de co
 
 | Nombre                        | Descripción                                                                       | Motor                      | Fase |
 | ----------------------------- | --------------------------------------------------------------------------------- | -------------------------- | ----- |
-| GM GPT-5.5                    | El modelo de frontera más reciente de OpenAI para trabajo profesional y de código  | gpt-5.5                    | ✅    |
+| GM GPT-5.6 Sol                 | Modelo de frontera de OpenAI para trabajo profesional y de código complejo        | gpt-5.6-sol                 | ✅    |
+| GM GPT-5.6 Terra               | Modelo predeterminado de OpenAI, equilibra inteligencia y costo                  | gpt-5.6-terra               | ✅    |
+| GM GPT-5.6 Luna                | Nivel de OpenAI más rápido y económico                                          | gpt-5.6-luna                | ✅    |
 | GM GPT-4o                     | Último modelo GPT de OpenAI impulsado por un System Prompt personalizado           | GPT-4o                     | ✅    |
+| GM o1-mini                    | Modelo de razonamiento compacto de OpenAI                                        | o1-mini                     | ✅    |
 | GM GPT-3.5 Fine Tuned         | Primer modelo ajustado fino de GPT-3.5                                            | GPT-3.5                    | ✅    |
-| GM GPT-3.5 Physics Fine Tuned | Modelo GPT-3.5 ajustado fino para generar animaciones de Física                   | GPT-3.5                    | ✅    |
+| GM GPT-3.5 Physics Fine Tuned | Modelo GPT-3.5 ajustado fino para generar animaciones de física                   | GPT-3.5                    | ✅    |
 | GM Claude Sonnet              | Modelo Claude Sonnet 3 adaptado con nuestro System Prompt personalizado           | claude-3-sonnet-20240229   | ✅    |
-| GM Claude Sonnet 3.5          | Modelo Claude Sonnet 3.5 adaptado con nuestro System Prompt personalizado         | claude-3-5-sonnet-20240620 | ✅    |
+| GM Claude Sonnet 3.5          | Modelo Claude Sonnet 3.5 adaptado con nuestro System Prompt personalizado         | claude-3-5-sonnet-20241022 | ✅    |
+| GM Claude Sonnet 4.6          | Modelo Claude Sonnet 4.6 adaptado con nuestro System Prompt personalizado        | claude-sonnet-4-6          | ✅    |
+| GM Claude Sonnet 5            | Modelo predeterminado de Anthropic, mejor combinación de velocidad e inteligencia | claude-sonnet-5            | ✅    |
+| GM Claude Opus 4.7            | Claude Opus 4.7 para generación de la más alta calidad en Anthropic              | claude-opus-4-7            | ✅    |
+| GM Claude Opus 4.8            | Máxima capacidad, estado del arte en trabajo agéntico de largo horizonte          | claude-opus-4-8            | ✅    |
+| GM Claude Haiku 4.5           | Claude Haiku 4.5 para generación rápida y ligera en Anthropic                     | claude-haiku-4-5-20251001  | ✅    |
+| GM Claude Fable 5             | Modelo más capaz de Anthropic, para el razonamiento más exigente                 | claude-fable-5             | ✅    |
 | GM Featherless Open Models    | Acceso compatible con OpenAI a modelos de código abierto alojados via Featherless | Qwen, DeepSeek, CodeLlama, etc. | ✅ |
+| GM LiteLLM Passthrough        | Acepta cualquier cadena de modelo compatible con LiteLLM (por ejemplo, `openai/gpt-4o`) | litellm              | ✅    |
 | GM Gemini 2.5 Flash           | Gemini 2.5 Flash de Google accedido via google-genai SDK                         | gemini-2.5-flash           | ✅    |
+| GM Gemini 2.5 Pro             | Gemini 2.5 Pro de Google accedido via google-genai SDK                           | gemini-2.5-pro             | ✅    |
 | GM Gemini 3 Flash             | Vista previa de Gemini 3 Flash de Google accedido via google-genai SDK            | gemini-3-flash-preview     | ✅    |
+| GM Kimi K3                    | Modelo insignia de Moonshot AI, contexto de 1M de tokens con razonamiento continuo | kimi-k3                  | ✅    |
+| GM Kimi K2.7 Code             | Modelo agéntico de Moonshot AI especializado en código                          | kimi-k2.7-code              | ✅    |
 | GM Qwen 2.5 Coder 7B          | Modelo de código abierto ajustado fino con pipeline SFT + DPO + GRPO             | Qwen2.5-Coder-7B-Instruct | 🚧    |
 | GM DeepSeek Coder V2 Lite     | Modelo de código abierto ajustado fino con pipeline SFT + DPO + GRPO             | DeepSeek-Coder-V2-Lite     | 🚧    |
 | GM CodeLlama 7B               | Modelo de código abierto ajustado fino con pipeline SFT + DPO + GRPO             | CodeLlama-7b-Instruct      | 🚧    |

@@ -71,17 +71,25 @@ Key improvements over Generative Manim:
 
 | Name                          | Description                                                               | Engine                     | Phase |
 | ----------------------------- | ------------------------------------------------------------------------- | -------------------------- | ----- |
-| GM GPT-5.5                    | OpenAI's newest frontier model for complex professional and coding work    | gpt-5.5                    | ✅    |
+| GM GPT-5.6 Sol                | OpenAI's frontier model for complex professional and coding work          | gpt-5.6-sol                | ✅    |
+| GM GPT-5.6 Terra              | Default OpenAI model, balances intelligence and cost                     | gpt-5.6-terra              | ✅    |
+| GM GPT-5.6 Luna               | Fastest, most cost-efficient OpenAI tier                                  | gpt-5.6-luna                | ✅    |
 | GM GPT-4o                     | Latest GPT model from OpenAI powered by a custom System Prompt            | GPT-4o                     | ✅    |
+| GM o1-mini                    | Compact OpenAI reasoning model                                            | o1-mini                    | ✅    |
 | GM GPT-3.5 Fine Tuned         | First Fine-tuned model of GPT-3.5                                         | GPT-3.5                    | ✅    |
 | GM GPT-3.5 Physics Fine Tuned | Fine-tuned GPT-3.5 model trained to generate Physics animations           | GPT-3.5                    | ✅    |
 | GM Claude Sonnet              | Claude Sonnet 3 model from Sonnet adapted with our custom System Prompt   | claude-3-sonnet-20240229   | ✅    |
 | GM Claude Sonnet 3.5          | Claude Sonnet 3.5 model from Sonnet adapted with our custom System Prompt | claude-3-5-sonnet-20241022 | ✅    |
-| GM Claude Sonnet 4.6          | Claude Sonnet 4.6 (default Anthropic model) adapted with our custom System Prompt | claude-sonnet-4-6 | ✅    |
+| GM Claude Sonnet 4.6          | Claude Sonnet 4.6 adapted with our custom System Prompt                  | claude-sonnet-4-6          | ✅    |
+| GM Claude Sonnet 5            | Default Anthropic model, best combination of speed and intelligence      | claude-sonnet-5            | ✅    |
 | GM Claude Opus 4.7            | Claude Opus 4.7 for highest-quality Anthropic generation                  | claude-opus-4-7            | ✅    |
+| GM Claude Opus 4.8            | Highest capability, state of the art on long-horizon agentic work        | claude-opus-4-8            | ✅    |
 | GM Claude Haiku 4.5           | Claude Haiku 4.5 for fast, lightweight Anthropic generation               | claude-haiku-4-5-20251001  | ✅    |
+| GM Claude Fable 5             | Most capable Anthropic model, for the most demanding reasoning           | claude-fable-5             | ✅    |
 | GM Featherless Open Models    | OpenAI-compatible access to hosted open-weight models via Featherless     | Qwen, DeepSeek, CodeLlama, etc. | ✅ |
+| GM LiteLLM Passthrough        | Accepts any model string supported by LiteLLM (e.g. `openai/gpt-4o`)     | litellm                    | ✅    |
 | GM Gemini 2.5 Flash           | Google's Gemini 2.5 Flash accessed via google-genai SDK                  | gemini-2.5-flash           | ✅    |
+| GM Gemini 2.5 Pro             | Google's Gemini 2.5 Pro accessed via google-genai SDK                    | gemini-2.5-pro             | ✅    |
 | GM Gemini 3 Flash             | Google's Gemini 3 Flash preview accessed via google-genai SDK            | gemini-3-flash-preview     | ✅    |
 | GM Kimi K3                    | Moonshot AI's flagship model, 1M-token context with always-on thinking mode | kimi-k3                 | ✅    |
 | GM Kimi K2.7 Code             | Moonshot AI's coding-specialized agentic model                           | kimi-k2.7-code             | ✅    |

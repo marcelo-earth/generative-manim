@@ -59,15 +59,28 @@ Es begann als Prototyp einer Web-App, die [GPT-4](https://openai.com/research/gp
 
 | Name                          | Beschreibung                                                                     | Engine                     | Phase |
 | ----------------------------- | -------------------------------------------------------------------------------- | -------------------------- | ----- |
-| GM GPT-5.5                    | OpenAIs neuestes Frontier-Modell für komplexe professionelle und Coding-Arbeit   | gpt-5.5                    | ✅    |
+| GM GPT-5.6 Sol                 | OpenAIs Frontier-Modell für komplexe professionelle und Coding-Arbeit            | gpt-5.6-sol                 | ✅    |
+| GM GPT-5.6 Terra               | Standardmodell von OpenAI, Balance aus Intelligenz und Kosten                    | gpt-5.6-terra               | ✅    |
+| GM GPT-5.6 Luna                | Schnellste, kosteneffizienteste OpenAI-Stufe                                     | gpt-5.6-luna                | ✅    |
 | GM GPT-4o                     | Neuestes GPT-Modell von OpenAI mit einem benutzerdefinierten System Prompt       | GPT-4o                     | ✅    |
+| GM o1-mini                    | Kompaktes Reasoning-Modell von OpenAI                                            | o1-mini                     | ✅    |
 | GM GPT-3.5 Fine Tuned         | Erstes Fine-tuned-Modell von GPT-3.5                                            | GPT-3.5                    | ✅    |
 | GM GPT-3.5 Physics Fine Tuned | Fine-tuned GPT-3.5-Modell, trainiert zur Generierung von Physik-Animationen      | GPT-3.5                    | ✅    |
 | GM Claude Sonnet              | Claude Sonnet 3-Modell, angepasst mit unserem benutzerdefinierten System Prompt  | claude-3-sonnet-20240229   | ✅    |
-| GM Claude Sonnet 3.5          | Claude Sonnet 3.5-Modell, angepasst mit unserem benutzerdefinierten System Prompt | claude-3-5-sonnet-20240620 | ✅    |
+| GM Claude Sonnet 3.5          | Claude Sonnet 3.5-Modell, angepasst mit unserem benutzerdefinierten System Prompt | claude-3-5-sonnet-20241022 | ✅    |
+| GM Claude Sonnet 4.6          | Claude Sonnet 4.6-Modell, angepasst mit unserem benutzerdefinierten System Prompt | claude-sonnet-4-6         | ✅    |
+| GM Claude Sonnet 5            | Standardmodell von Anthropic, beste Kombination aus Geschwindigkeit und Intelligenz | claude-sonnet-5          | ✅    |
+| GM Claude Opus 4.7            | Claude Opus 4.7 für Anthropic-Generierung höchster Qualität                     | claude-opus-4-7            | ✅    |
+| GM Claude Opus 4.8            | Höchste Fähigkeit, Stand der Technik bei langfristigen agentischen Aufgaben      | claude-opus-4-8            | ✅    |
+| GM Claude Haiku 4.5           | Claude Haiku 4.5 für schnelle, leichtgewichtige Anthropic-Generierung            | claude-haiku-4-5-20251001  | ✅    |
+| GM Claude Fable 5             | Fähigstes Anthropic-Modell, für die anspruchsvollsten Reasoning-Aufgaben         | claude-fable-5             | ✅    |
 | GM Featherless Open Models    | OpenAI-kompatibler Zugang zu gehosteten Open-Weight-Modellen via Featherless     | Qwen, DeepSeek, CodeLlama, etc. | ✅ |
+| GM LiteLLM Passthrough        | Akzeptiert jeden von LiteLLM unterstützten Modell-String (z. B. `openai/gpt-4o`) | litellm                    | ✅    |
 | GM Gemini 2.5 Flash           | Googles Gemini 2.5 Flash, aufgerufen via google-genai SDK                       | gemini-2.5-flash           | ✅    |
+| GM Gemini 2.5 Pro             | Googles Gemini 2.5 Pro, aufgerufen via google-genai SDK                         | gemini-2.5-pro             | ✅    |
 | GM Gemini 3 Flash             | Googles Gemini 3 Flash Preview, aufgerufen via google-genai SDK                 | gemini-3-flash-preview     | ✅    |
+| GM Kimi K3                    | Moonshot AIs Flaggschiffmodell, 1M-Token-Kontext mit permanentem Denkmodus      | kimi-k3                    | ✅    |
+| GM Kimi K2.7 Code             | Auf Coding spezialisiertes agentisches Modell von Moonshot AI                   | kimi-k2.7-code              | ✅    |
 | GM Qwen 2.5 Coder 7B          | Open-Source-Modell, feinabgestimmt mit SFT + DPO + GRPO-Pipeline               | Qwen2.5-Coder-7B-Instruct | 🚧    |
 | GM DeepSeek Coder V2 Lite     | Open-Source-Modell, feinabgestimmt mit SFT + DPO + GRPO-Pipeline               | DeepSeek-Coder-V2-Lite     | 🚧    |
 | GM CodeLlama 7B               | Open-Source-Modell, feinabgestimmt mit SFT + DPO + GRPO-Pipeline               | CodeLlama-7b-Instruct      | 🚧    |

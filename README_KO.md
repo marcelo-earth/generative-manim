@@ -59,15 +59,28 @@
 
 | 이름                          | 설명                                                                          | 엔진                       | 단계 |
 | ----------------------------- | ----------------------------------------------------------------------------- | -------------------------- | ----- |
-| GM GPT-5.5                    | 복잡한 전문적 및 코딩 작업을 위한 OpenAI의 최신 프론티어 모델                  | gpt-5.5                    | ✅    |
+| GM GPT-5.6 Sol                 | 복잡한 전문적 및 코딩 작업을 위한 OpenAI의 프론티어 모델                       | gpt-5.6-sol                 | ✅    |
+| GM GPT-5.6 Terra               | 지능과 비용의 균형을 맞춘 OpenAI 기본 모델                                    | gpt-5.6-terra               | ✅    |
+| GM GPT-5.6 Luna                | 가장 빠르고 비용 효율적인 OpenAI 등급                                        | gpt-5.6-luna                | ✅    |
 | GM GPT-4o                     | 커스텀 System Prompt로 구동되는 OpenAI의 최신 GPT 모델                         | GPT-4o                     | ✅    |
+| GM o1-mini                    | 경량 OpenAI 추론 모델                                                        | o1-mini                     | ✅    |
 | GM GPT-3.5 Fine Tuned         | 첫 번째 GPT-3.5 파인튜닝 모델                                                 | GPT-3.5                    | ✅    |
 | GM GPT-3.5 Physics Fine Tuned | 물리 애니메이션 생성을 위해 훈련된 파인튜닝 GPT-3.5 모델                       | GPT-3.5                    | ✅    |
 | GM Claude Sonnet              | 커스텀 System Prompt로 적용된 Claude Sonnet 3 모델                            | claude-3-sonnet-20240229   | ✅    |
-| GM Claude Sonnet 3.5          | 커스텀 System Prompt로 적용된 Claude Sonnet 3.5 모델                          | claude-3-5-sonnet-20240620 | ✅    |
+| GM Claude Sonnet 3.5          | 커스텀 System Prompt로 적용된 Claude Sonnet 3.5 모델                          | claude-3-5-sonnet-20241022 | ✅    |
+| GM Claude Sonnet 4.6          | 커스텀 System Prompt로 적용된 Claude Sonnet 4.6 모델                          | claude-sonnet-4-6          | ✅    |
+| GM Claude Sonnet 5            | 속도와 지능의 균형이 가장 뛰어난 Anthropic 기본 모델                          | claude-sonnet-5            | ✅    |
+| GM Claude Opus 4.7            | 최고 품질의 Anthropic 생성을 위한 Claude Opus 4.7                             | claude-opus-4-7            | ✅    |
+| GM Claude Opus 4.8            | 최고 수준의 성능, 장기 에이전틱 작업에서 최첨단 성능                          | claude-opus-4-8            | ✅    |
+| GM Claude Haiku 4.5           | 빠르고 가벼운 Anthropic 생성을 위한 Claude Haiku 4.5                          | claude-haiku-4-5-20251001  | ✅    |
+| GM Claude Fable 5             | 가장 까다로운 추론 작업을 위한 Anthropic의 가장 강력한 모델                    | claude-fable-5             | ✅    |
 | GM Featherless Open Models    | Featherless를 통해 호스팅된 오픈 웨이트 모델에 대한 OpenAI 호환 접근          | Qwen, DeepSeek, CodeLlama, 등 | ✅ |
+| GM LiteLLM Passthrough        | LiteLLM이 지원하는 모든 모델 문자열을 허용 (예: `openai/gpt-4o`)              | litellm                    | ✅    |
 | GM Gemini 2.5 Flash           | google-genai SDK를 통해 접근하는 Google의 Gemini 2.5 Flash                    | gemini-2.5-flash           | ✅    |
+| GM Gemini 2.5 Pro             | google-genai SDK를 통해 접근하는 Google의 Gemini 2.5 Pro                      | gemini-2.5-pro             | ✅    |
 | GM Gemini 3 Flash             | google-genai SDK를 통해 접근하는 Google의 Gemini 3 Flash 프리뷰               | gemini-3-flash-preview     | ✅    |
+| GM Kimi K3                    | 100만 토큰 컨텍스트와 상시 사고 모드를 갖춘 Moonshot AI의 대표 모델           | kimi-k3                     | ✅    |
+| GM Kimi K2.7 Code             | 코딩에 특화된 Moonshot AI의 에이전틱 모델                                    | kimi-k2.7-code              | ✅    |
 | GM Qwen 2.5 Coder 7B          | SFT + DPO + GRPO 파이프라인으로 파인튜닝된 오픈소스 모델                      | Qwen2.5-Coder-7B-Instruct | 🚧    |
 | GM DeepSeek Coder V2 Lite     | SFT + DPO + GRPO 파이프라인으로 파인튜닝된 오픈소스 모델                      | DeepSeek-Coder-V2-Lite     | 🚧    |
 | GM CodeLlama 7B               | SFT + DPO + GRPO 파이프라인으로 파인튜닝된 오픈소스 모델                      | CodeLlama-7b-Instruct      | 🚧    |
