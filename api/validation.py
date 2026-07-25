@@ -71,6 +71,19 @@ def validate_identifier(body, field, default):
     return value, None
 
 
+def safe_filename_component(value, default):
+    """Sanitize a value for safe use as part of an on-disk filename.
+
+    Strips everything except letters, digits, underscore and hyphen so the
+    result cannot contain path separators or '..' traversal sequences, then
+    falls back to *default* if nothing safe is left (e.g. the input was
+    empty, ``None``, or entirely made of unsafe characters).
+    """
+    text = "" if value is None else str(value)
+    cleaned = re.sub(r"[^A-Za-z0-9_-]", "", text)
+    return cleaned or default
+
+
 def validate_boolean(body, field, default=False):
     """Validate an optional boolean field.
 

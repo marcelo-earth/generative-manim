@@ -141,6 +141,39 @@ class TestVideoGenerationGemini:
         assert resp.status_code == 200
 
 
+class TestVideoGenerationFilenameSafety:
+    def test_path_traversal_in_project_name_is_sanitized(self, client, monkeypatch):
+        monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+
+        msg = mock.MagicMock()
+        msg.content = VALID_MANIM_CODE
+        choice = mock.MagicMock()
+        choice.message = msg
+        openai_resp = mock.MagicMock()
+        openai_resp.choices = [choice]
+
+        subprocess_result = mock.MagicMock()
+        subprocess_result.returncode = 0
+
+        with mock.patch("api.routes.video_generation.OpenAI") as mock_openai:
+            mock_openai.return_value.chat.completions.create.return_value = openai_resp
+            with mock.patch("api.routes.video_generation.subprocess.run", return_value=subprocess_result):
+                with mock.patch("os.path.exists", return_value=True):
+                    with mock.patch("shutil.move") as mock_move:
+                        resp = client.post("/v1/video/generation", json={
+                            "prompt": "draw a circle",
+                            "engine": "openai",
+                            "user_id": "../../etc",
+                            "project_name": "../../../secrets",
+                            "iteration": "1/../2",
+                        })
+
+        assert resp.status_code == 200
+        destination = mock_move.call_args[0][1]
+        assert ".." not in destination
+        assert os.path.basename(destination) == "video-etc-secrets-12.mp4"
+
+
 class TestVideoGenerationAspectRatio:
     def test_default_aspect_ratio_is_16_9(self, client, monkeypatch):
         monkeypatch.setenv("OPENAI_API_KEY", "test-key")

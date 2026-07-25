@@ -128,6 +128,34 @@ class TestVideoRenderingFailure:
         assert resp.status_code == 500
 
 
+class TestVideoRenderingFilenameSafety:
+    def test_path_traversal_in_project_name_is_sanitized(self, client, monkeypatch):
+        monkeypatch.setenv("USE_LOCAL_STORAGE", "true")
+        popen_mock = _make_popen_mock(returncode=0)
+
+        with mock.patch("api.routes.video_rendering.subprocess.Popen", return_value=popen_mock):
+            with mock.patch("os.path.exists", return_value=True):
+                with mock.patch("os.listdir", return_value=["GenScene.mp4"]):
+                    with mock.patch("api.routes.video_rendering.move_to_public_folder",
+                                    return_value="http://localhost/video.mp4") as mock_move:
+                        with mock.patch("builtins.open", mock.mock_open()):
+                            with mock.patch("os.remove"):
+                                resp = client.post("/v1/video/rendering", json={
+                                    "code": VALID_CODE,
+                                    "file_name": "GenScene",
+                                    "file_class": "GenScene",
+                                    "user_id": "../../etc",
+                                    "project_name": "../../../secrets",
+                                    "iteration": "1/../2",
+                                })
+
+        assert resp.status_code == 200
+        video_storage_file_name = mock_move.call_args[0][1]
+        assert ".." not in video_storage_file_name
+        assert "/" not in video_storage_file_name
+        assert video_storage_file_name == "video-etc-secrets-12"
+
+
 class TestVideoRenderingAspectRatio:
     def _run_with_captured_write(self, client, monkeypatch, aspect_ratio):
         monkeypatch.setenv("USE_LOCAL_STORAGE", "true")

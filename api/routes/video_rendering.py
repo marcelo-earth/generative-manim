@@ -16,6 +16,7 @@ from flask import Blueprint, Response, jsonify, request
 from api.validation import (
     get_json_body,
     require_string,
+    safe_filename_component,
     validate_aspect_ratio,
     validate_boolean,
     validate_identifier,
@@ -86,9 +87,9 @@ def render_video():
         return err
 
     file_name = body.get("file_name")
-    user_id = body.get("user_id") or str(uuid.uuid4())
-    project_name = body.get("project_name")
-    iteration = body.get("iteration")
+    user_id = safe_filename_component(body.get("user_id"), str(uuid.uuid4()))
+    project_name = safe_filename_component(body.get("project_name"), "untitled")
+    iteration = safe_filename_component(body.get("iteration"), "1")
 
     video_storage_file_name = f"video-{user_id}-{project_name}-{iteration}"
 
