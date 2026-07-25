@@ -113,10 +113,7 @@ def count_images_in_conversation(messages):
                 image_message_indices.append(i)
     return total_images, image_message_indices
 
-def manage_conversation_images(messages, new_images_count, engine):
-    if engine != "openai":
-        return new_images_count
-
+def manage_conversation_images(messages, new_images_count):
     MAX_IMAGES = 50
     current_total, image_indices = count_images_in_conversation(messages)
 
@@ -793,7 +790,7 @@ Rules:
                                 ]
                             }
 
-                            available_slots = manage_conversation_images(messages, len(result_json["images"]), engine)
+                            available_slots = manage_conversation_images(messages, len(result_json["images"]))
                             total_frames = len(result_json["images"])
                             frame_interval = max(1, total_frames // available_slots)
                             selected_frames = result_json["images"][::frame_interval][:available_slots]
