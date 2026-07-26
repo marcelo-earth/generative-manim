@@ -52,6 +52,7 @@ It began as a prototype of a web app that uses [GPT-4](https://openai.com/resear
 - ☁️ [Cloud Deployment Guide](./docs/cloud-deployment.md): Deploy the API on Render or another Docker-based cloud platform.
 - 🧑‍💻 [Generative Manim Developers](https://discord.gg/SNdbPU2AMM): Join our Discord server, learn new things, share your creations and more!
 - 🍎 [Generative Manim Streamlit (Legacy)](https://github.com/360macky/generative-manim/tree/main/streamlit): First LLM exploration of LLMs and Animation.
+- 🧩 [Manim Awesome Skills](https://github.com/marcelo-earth/manim-awesome-skills): A curated collection of Manim skills and snippets.
 
 ## 🎬 Animo
 
