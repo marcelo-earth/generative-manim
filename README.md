@@ -66,6 +66,8 @@ Key improvements over Generative Manim:
 - **Code ownership out of the box:** generated Manim code is yours to export, version-control, and reuse without any platform lock-in.
 - **Lower barrier to entry:** no Manim knowledge required and no server setup or Docker container to run.
 
+See what's new in each release on the [Animo changelog](https://animo.video/changelog).
+
 ## 💻 Models
 
 **Models** are the core of Generative Manim. A model is a way to convert text to code, that can later be rendered in a video.
@@ -92,6 +94,7 @@ Key improvements over Generative Manim:
 | GM Gemini 2.5 Flash           | Google's Gemini 2.5 Flash accessed via google-genai SDK                  | gemini-2.5-flash           | ✅    |
 | GM Gemini 2.5 Pro             | Google's Gemini 2.5 Pro accessed via google-genai SDK                    | gemini-2.5-pro             | ✅    |
 | GM Gemini 3 Flash             | Google's Gemini 3 Flash preview accessed via google-genai SDK            | gemini-3-flash-preview     | ✅    |
+| GM Gemini 3.7 Flash           | Google's latest and most capable Flash model, built for coding and agentic workflows | gemini-3.7-flash           | ✅    |
 | GM Kimi K3                    | Moonshot AI's flagship model, 1M-token context with always-on thinking mode | kimi-k3                 | ✅    |
 | GM Kimi K2.7 Code             | Moonshot AI's coding-specialized agentic model                           | kimi-k2.7-code             | ✅    |
 | GM Qwen 2.5 Coder 7B          | Open-source model fine-tuned with SFT + DPO + GRPO pipeline              | Qwen2.5-Coder-7B-Instruct | 🚧    |

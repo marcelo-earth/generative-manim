@@ -2,6 +2,8 @@
 
 [Animo](https://animo.video) is a lightweight desktop application that converts natural language descriptions into animated videos using AI and the Manim engine.
 
+See what's new in each release on the [changelog](https://animo.video/changelog).
+
 ## What it does
 
 Animo enables educators and students to create professional mathematical and educational animations without coding expertise. Users describe what they want to animate in plain English, AI generates the Manim code, and the application renders it locally into video.
