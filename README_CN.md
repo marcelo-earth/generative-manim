@@ -80,6 +80,7 @@
 | GM Gemini 2.5 Flash           | 通过 google-genai SDK 访问的 Google Gemini 2.5 Flash 模型   | gemini-2.5-flash           | ✅            |
 | GM Gemini 2.5 Pro             | 通过 google-genai SDK 访问的 Google Gemini 2.5 Pro 模型     | gemini-2.5-pro             | ✅            |
 | GM Gemini 3 Flash             | 通过 google-genai SDK 访问的 Google Gemini 3 Flash 预览版   | gemini-3-flash-preview     | ✅            |
+| GM Gemini 3.7 Flash           | Google 最新、最强大的 Flash 模型，专为编码与智能体工作流打造 | gemini-3.7-flash           | ✅            |
 | GM Kimi K3                    | Moonshot AI 的旗舰模型，100 万 token 上下文，常驻思考模式    | kimi-k3                    | ✅            |
 | GM Kimi K2.7 Code             | Moonshot AI 面向编码的智能体专用模型                         | kimi-k2.7-code             | ✅            |
 | GM Qwen 2.5 Coder 7B          | 使用 SFT + DPO + GRPO 流程进行微调的开源模型                | Qwen2.5-Coder-7B-Instruct  | 🚧            |

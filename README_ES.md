@@ -79,6 +79,7 @@ Los **modelos** son el núcleo de Generative Manim. Un modelo es una forma de co
 | GM Gemini 2.5 Flash           | Gemini 2.5 Flash de Google accedido via google-genai SDK                         | gemini-2.5-flash           | ✅    |
 | GM Gemini 2.5 Pro             | Gemini 2.5 Pro de Google accedido via google-genai SDK                           | gemini-2.5-pro             | ✅    |
 | GM Gemini 3 Flash             | Vista previa de Gemini 3 Flash de Google accedido via google-genai SDK            | gemini-3-flash-preview     | ✅    |
+| GM Gemini 3.7 Flash           | El modelo Flash más reciente y capaz de Google, diseñado para código y flujos agénticos | gemini-3.7-flash           | ✅    |
 | GM Kimi K3                    | Modelo insignia de Moonshot AI, contexto de 1M de tokens con razonamiento continuo | kimi-k3                  | ✅    |
 | GM Kimi K2.7 Code             | Modelo agéntico de Moonshot AI especializado en código                          | kimi-k2.7-code              | ✅    |
 | GM Qwen 2.5 Coder 7B          | Modelo de código abierto ajustado fino con pipeline SFT + DPO + GRPO             | Qwen2.5-Coder-7B-Instruct | 🚧    |

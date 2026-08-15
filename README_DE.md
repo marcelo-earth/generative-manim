@@ -79,6 +79,7 @@ Es begann als Prototyp einer Web-App, die [GPT-4](https://openai.com/research/gp
 | GM Gemini 2.5 Flash           | Googles Gemini 2.5 Flash, aufgerufen via google-genai SDK                       | gemini-2.5-flash           | ✅    |
 | GM Gemini 2.5 Pro             | Googles Gemini 2.5 Pro, aufgerufen via google-genai SDK                         | gemini-2.5-pro             | ✅    |
 | GM Gemini 3 Flash             | Googles Gemini 3 Flash Preview, aufgerufen via google-genai SDK                 | gemini-3-flash-preview     | ✅    |
+| GM Gemini 3.7 Flash           | Googles neuestes und leistungsfähigstes Flash-Modell für Coding und agentische Workflows | gemini-3.7-flash           | ✅    |
 | GM Kimi K3                    | Moonshot AIs Flaggschiffmodell, 1M-Token-Kontext mit permanentem Denkmodus      | kimi-k3                    | ✅    |
 | GM Kimi K2.7 Code             | Auf Coding spezialisiertes agentisches Modell von Moonshot AI                   | kimi-k2.7-code              | ✅    |
 | GM Qwen 2.5 Coder 7B          | Open-Source-Modell, feinabgestimmt mit SFT + DPO + GRPO-Pipeline               | Qwen2.5-Coder-7B-Instruct | 🚧    |

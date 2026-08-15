@@ -79,6 +79,7 @@
 | GM Gemini 2.5 Flash           | google-genai SDK를 통해 접근하는 Google의 Gemini 2.5 Flash                    | gemini-2.5-flash           | ✅    |
 | GM Gemini 2.5 Pro             | google-genai SDK를 통해 접근하는 Google의 Gemini 2.5 Pro                      | gemini-2.5-pro             | ✅    |
 | GM Gemini 3 Flash             | google-genai SDK를 통해 접근하는 Google의 Gemini 3 Flash 프리뷰               | gemini-3-flash-preview     | ✅    |
+| GM Gemini 3.7 Flash           | 코딩과 에이전틱 워크플로우를 위한 Google의 최신 최고 성능 Flash 모델           | gemini-3.7-flash           | ✅    |
 | GM Kimi K3                    | 100만 토큰 컨텍스트와 상시 사고 모드를 갖춘 Moonshot AI의 대표 모델           | kimi-k3                     | ✅    |
 | GM Kimi K2.7 Code             | 코딩에 특화된 Moonshot AI의 에이전틱 모델                                    | kimi-k2.7-code              | ✅    |
 | GM Qwen 2.5 Coder 7B          | SFT + DPO + GRPO 파이프라인으로 파인튜닝된 오픈소스 모델                      | Qwen2.5-Coder-7B-Instruct | 🚧    |
