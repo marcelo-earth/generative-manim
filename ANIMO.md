@@ -23,6 +23,7 @@ Animo enables educators and students to create professional mathematical and edu
 - **Export Options** — Multiple formats (MP4, GIF, PNG sequences) and aspect ratios
 - **Code Ownership** — Full access to generated Manim code for further customization
 - **Lightweight** — Runs in under 7 MB
+- **BYOK (Bring Your Own Key)**: Use your own API keys from Claude, OpenAI, or other providers instead of a subscription
 
 ## Technology
 
@@ -34,7 +35,7 @@ Animo enables educators and students to create professional mathematical and edu
 ## Pricing
 
 - **$49 one-time** — Lifetime license with unlimited updates
-- **Free** — For users with existing ChatGPT, Claude, or OpenCode subscriptions
+- **Free** — For users with existing ChatGPT, Claude, or OpenCode subscriptions, or by bringing your own API key (BYOK)
 - **$20/month** — Subscription with included AI credits
 
 ## Who uses it
