@@ -4,7 +4,6 @@ werkzeug==2.3.7
 ffmpeg==1.4
 openai>=1.24.0,<2.0.0
 manim==0.21.0
-manim-physics==0.4.0
 google-cloud-storage==2.10.0
 python-dotenv==1.0.0
 bs4==0.0.1
