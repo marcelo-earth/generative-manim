@@ -129,6 +129,34 @@ class TestCodeGenerationAnthropic:
             client.post("/v1/code/generation", json={"prompt": "test", "engine": "anthropic"})
         assert captured.get("model") == "claude-sonnet-5"
 
+    def test_does_not_send_temperature(self, client, monkeypatch):
+        # Current Claude models reject `temperature` with a 400
+        # ("`temperature` is deprecated for this model").
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        captured = {}
+        with mock.patch("anthropic.Anthropic") as mock_anthropic:
+            def capture(**kwargs):
+                captured.update(kwargs)
+                return _make_anthropic_response("code")
+            mock_anthropic.return_value.messages.create.side_effect = capture
+            resp = client.post("/v1/code/generation", json={"prompt": "test", "engine": "anthropic"})
+        assert resp.status_code == 200
+        assert "temperature" not in captured
+
+    def test_non_text_blocks_are_skipped(self, client, monkeypatch):
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        thinking = mock.MagicMock(spec=["type", "thinking"])
+        thinking.type = "thinking"
+        text = mock.MagicMock()
+        text.text = "from manim import *"
+        resp_obj = mock.MagicMock()
+        resp_obj.content = [thinking, text]
+        with mock.patch("anthropic.Anthropic") as mock_anthropic:
+            mock_anthropic.return_value.messages.create.return_value = resp_obj
+            resp = client.post("/v1/code/generation", json={"prompt": "test", "engine": "anthropic"})
+        assert resp.status_code == 200
+        assert resp.get_json()["code"] == "from manim import *"
+
     def test_claude_opus_4_7_accepted(self, client, monkeypatch):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
         captured = {}

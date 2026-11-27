@@ -26,11 +26,10 @@ def generate_manim_code(prompt, engine="openai", model="gpt-5.6-terra"):
             response = client.messages.create(
                 model=model,
                 max_tokens=1000,
-                temperature=0.2,
                 system=MANIM_CODE_GENERATION_PROMPT,
                 messages=messages,
             )
-            code = "".join(block.text for block in response.content)
+            code = "".join(t for t in (getattr(block, "text", None) for block in response.content) if isinstance(t, str))
             return code
         except Exception as e:
             raise Exception(f"Error generating code with {model}: {str(e)}")
